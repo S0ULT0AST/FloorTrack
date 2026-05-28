@@ -1,0 +1,4038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FloorTrack</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0e14;
+  --surface: #13161f;
+  --surface2: #1a1e2e;
+  --surface3: #222840;
+  --border: #2a2f4a;
+  --border2: #363d60;
+  --accent: #f0a500;
+  --accent-dim: rgba(240,165,0,0.15);
+  --cyan: #00d4c8;
+  --cyan-dim: rgba(0,212,200,0.12);
+  --purple: #9b6dff;
+  --purple-dim: rgba(155,109,255,0.12);
+  --blue: #4d9fff;
+  --blue-dim: rgba(77,159,255,0.12);
+  --green: #3ecf6a;
+  --green-dim: rgba(62,207,106,0.12);
+  --red: #ff4d6d;
+  --red-dim: rgba(255,77,109,0.12);
+  --muted: #5a6080;
+  --muted2: #7a84a8;
+  --text: #dde3f8;
+  --text2: #a0aac8;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Syne', sans-serif;
+  --radius: 6px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+.hidden { display: none !important; }
+.flex { display: flex; }
+.flex-col { display: flex; flex-direction: column; }
+.gap-4 { gap: 4px; }
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.gap-16 { gap: 16px; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.flex-1 { flex: 1; }
+.w-full { width: 100%; }
+.text-muted { color: var(--muted2); }
+.text-accent { color: var(--accent); }
+.text-cyan { color: var(--cyan); }
+.text-red { color: var(--red); }
+.text-green { color: var(--green); }
+.mono { font-family: var(--mono); }
+
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--muted2);
+  font-family: var(--mono);
+}
+input, select, textarea {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 9px 12px;
+  font-family: var(--mono);
+  font-size: 13px;
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+input::placeholder { color: var(--muted); }
+select option { background: var(--surface2); }
+textarea { resize: vertical; min-height: 60px; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 18px;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-primary { background: var(--accent); color: #0c0e14; }
+.btn-primary:hover:not(:disabled) { filter: brightness(1.12); box-shadow: 0 0 16px rgba(240,165,0,0.3); }
+.btn-secondary { background: var(--surface3); color: var(--text); border: 1px solid var(--border2); }
+.btn-secondary:hover:not(:disabled) { border-color: var(--muted2); background: var(--surface2); }
+.btn-danger { background: transparent; color: var(--red); border: 1px solid var(--red); }
+.btn-danger:hover:not(:disabled) { background: var(--red-dim); }
+.btn-cyan { background: transparent; color: var(--cyan); border: 1px solid var(--cyan); }
+.btn-cyan:hover:not(:disabled) { background: var(--cyan-dim); }
+.btn-green { background: transparent; color: var(--green); border: 1px solid var(--green); }
+.btn-green:hover:not(:disabled) { background: var(--green-dim); }
+.btn-purple { background: transparent; color: var(--purple); border: 1px solid var(--purple); }
+.btn-purple:hover:not(:disabled) { background: var(--purple-dim); }
+.btn-sm { padding: 5px 12px; font-size: 10px; letter-spacing: 0.8px; }
+.btn-icon { width: 30px; height: 30px; padding: 0; font-size: 14px; }
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  font-family: var(--mono);
+}
+.badge-good { background: var(--green-dim); color: var(--green); }
+.badge-fair { background: var(--accent-dim); color: var(--accent); }
+.badge-poor { background: var(--red-dim); color: var(--red); }
+.badge-sold { background: rgba(90,96,128,0.2); color: var(--muted2); }
+.badge-transfer { background: var(--purple-dim); color: var(--purple); }
+.badge-role { padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; font-family: var(--mono); }
+
+.divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+.toggle-wrap { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.toggle-wrap:last-child { border-bottom: none; }
+.toggle-info { flex: 1; }
+.toggle-info .t-name { font-size: 13px; font-weight: 600; }
+.toggle-info .t-desc { font-size: 11px; color: var(--muted2); margin-top: 1px; }
+.toggle { position: relative; width: 38px; height: 20px; flex-shrink: 0; margin-left: 12px; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: var(--surface3); border: 1px solid var(--border2);
+  border-radius: 20px; cursor: pointer; transition: all 0.2s;
+}
+.toggle-slider:before {
+  content: ''; position: absolute;
+  width: 14px; height: 14px; left: 2px; top: 2px;
+  background: var(--muted2); border-radius: 50%; transition: all 0.2s;
+}
+.toggle input:checked + .toggle-slider { background: var(--accent-dim); border-color: var(--accent); }
+.toggle input:checked + .toggle-slider:before { transform: translateX(18px); background: var(--accent); }
+
+/* ── SETUP ── */
+#screen-setup {
+  height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at 30% 50%, rgba(240,165,0,0.05) 0%, transparent 60%),
+              radial-gradient(ellipse at 70% 20%, rgba(0,212,200,0.04) 0%, transparent 50%), var(--bg);
+}
+.setup-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 48px; width: 420px;
+  box-shadow: var(--shadow); animation: fadeUp 0.4s ease;
+}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.setup-logo { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 4px; }
+.setup-logo span { color: var(--accent); }
+.setup-sub { font-size: 12px; color: var(--muted2); font-family: var(--mono); letter-spacing: 1px; margin-bottom: 32px; }
+.setup-step { font-size: 10px; color: var(--accent); font-family: var(--mono); letter-spacing: 2px; margin-bottom: 8px; text-transform: uppercase; }
+.setup-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+.setup-desc { font-size: 13px; color: var(--muted2); margin-bottom: 24px; line-height: 1.6; }
+.pw-strength { height: 3px; border-radius: 2px; margin-top: 6px; transition: all 0.3s; background: var(--border); }
+.pw-hint { font-size: 10px; font-family: var(--mono); color: var(--muted2); margin-top: 4px; }
+
+/* ── LOGIN ── */
+#screen-login {
+  height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at 60% 40%, rgba(0,212,200,0.04) 0%, transparent 60%),
+              radial-gradient(ellipse at 20% 70%, rgba(240,165,0,0.04) 0%, transparent 50%), var(--bg);
+}
+.login-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 48px; width: 400px;
+  box-shadow: var(--shadow); animation: fadeUp 0.3s ease;
+}
+.login-logo { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 2px; }
+.login-logo span { color: var(--accent); }
+.login-tagline { font-size: 11px; color: var(--muted2); font-family: var(--mono); letter-spacing: 1.5px; margin-bottom: 36px; }
+.login-error {
+  background: var(--red-dim); border: 1px solid var(--red);
+  border-radius: var(--radius); padding: 10px 14px;
+  font-size: 12px; font-family: var(--mono); color: var(--red);
+  margin-bottom: 16px; display: none;
+}
+.login-error.show { display: block; animation: shake 0.3s ease; }
+@keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+.attempts-bar { display: flex; gap: 4px; margin-top: 8px; }
+.attempt-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border2); transition: background 0.2s; }
+.attempt-dot.used { background: var(--red); }
+
+/* ── MAIN APP ── */
+#screen-app { height: 100vh; display: flex; flex-direction: column; }
+
+#topbar {
+  height: 52px; background: var(--surface); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 20px; gap: 20px;
+  flex-shrink: 0; z-index: 100;
+}
+.topbar-logo { font-size: 18px; font-weight: 800; letter-spacing: -0.3px; flex-shrink: 0; }
+.topbar-logo span { color: var(--accent); }
+.topbar-nav { display: flex; gap: 2px; flex: 1; }
+.nav-btn {
+  padding: 6px 14px; font-family: var(--sans); font-size: 12px; font-weight: 600;
+  letter-spacing: 0.5px; color: var(--muted2); background: none; border: none;
+  border-radius: var(--radius); cursor: pointer; transition: all 0.12s;
+  display: flex; align-items: center; gap: 6px; border-bottom: 2px solid transparent;
+}
+.nav-btn:hover { color: var(--text); background: var(--surface2); }
+.nav-btn.active { color: var(--text); background: var(--surface2); border-bottom-color: var(--accent); border-radius: var(--radius) var(--radius) 0 0; }
+.nav-btn .nav-icon { font-size: 14px; }
+.topbar-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.user-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 10px 4px 6px; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 20px;
+  cursor: pointer; transition: border-color 0.15s; position: relative;
+}
+.user-chip:hover { border-color: var(--border2); }
+.user-avatar {
+  width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: #0c0e14;
+  background: var(--accent); flex-shrink: 0;
+}
+.user-name { font-size: 12px; font-weight: 600; }
+.user-role-label { font-size: 10px; color: var(--muted2); font-family: var(--mono); }
+
+/* User dropdown menu */
+.user-dropdown {
+  position: absolute; top: calc(100% + 6px); right: 0;
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: var(--radius); padding: 4px;
+  min-width: 180px; z-index: 200; box-shadow: var(--shadow);
+  display: none;
+}
+.user-dropdown.open { display: block; animation: fadein 0.12s ease; }
+.udrop-header {
+  padding: 10px 12px 8px; border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+.udrop-username { font-size: 13px; font-weight: 700; }
+.udrop-role { font-size: 10px; font-family: var(--mono); color: var(--muted2); margin-top: 1px; }
+.udrop-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; font-size: 12px; color: var(--text2);
+  border-radius: 4px; cursor: pointer; transition: all 0.1s;
+  border: none; background: none; width: 100%; text-align: left; font-family: var(--sans);
+}
+.udrop-item:hover { background: var(--surface2); color: var(--text); }
+.udrop-item.danger { color: var(--red); }
+.udrop-item.danger:hover { background: var(--red-dim); }
+
+#app-body { display: flex; flex: 1; overflow: hidden; position: relative; }
+
+.view { display: none; flex: 1; overflow: hidden; flex-direction: column; }
+.view.active { display: flex; }
+
+/* ── FLOOR MAP ── */
+#view-map { flex-direction: row; overflow: hidden; }
+
+.map-sidebar {
+  width: 300px; flex-shrink: 0; background: var(--surface);
+  border-right: 1px solid var(--border); display: flex;
+  flex-direction: column; overflow: hidden;
+}
+.sidebar-tabs { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--border); }
+.stab {
+  padding: 11px; text-align: center; font-size: 10px; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer;
+  color: var(--muted2); border: none; background: none; transition: all 0.12s;
+  font-family: var(--sans); border-bottom: 2px solid transparent;
+}
+.stab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--accent-dim); }
+.stab-panel { display: none; flex: 1; overflow-y: auto; padding: 14px; flex-direction: column; gap: 10px; }
+.stab-panel.active { display: flex; }
+
+.section-head {
+  font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted2); font-family: var(--mono); padding-bottom: 8px;
+  border-bottom: 1px solid var(--border); margin-bottom: 2px;
+}
+
+.item-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-left: 3px solid transparent; border-radius: var(--radius);
+  padding: 10px 12px; cursor: pointer; transition: all 0.12s;
+}
+.item-card:hover { border-left-color: var(--accent); background: rgba(240,165,0,0.04); }
+.item-card.selected { border-color: var(--accent); border-left-color: var(--accent); background: var(--accent-dim); }
+.ic-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+.ic-serial { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 600; }
+.ic-loc { font-family: var(--mono); font-size: 11px; background: var(--surface3); padding: 2px 7px; border-radius: 3px; color: var(--cyan); }
+.ic-meta { font-size: 11px; color: var(--muted2); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+.map-area { flex: 1; overflow: auto; padding: 20px; position: relative; }
+.map-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.map-title { font-size: 13px; font-weight: 700; letter-spacing: 0.5px; }
+.map-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-left: auto; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--muted2); font-family: var(--mono); }
+.legend-swatch { width: 12px; height: 12px; border-radius: 2px; border: 1px solid; }
+
+/* TRANSFER SIDEBAR — fixed layout */
+#transfer-sidebar {
+  width: 0; overflow: hidden; background: var(--surface);
+  border-left: 1px solid var(--border);
+  transition: width 0.25s ease; flex-shrink: 0;
+  display: flex; flex-direction: column;
+}
+#transfer-sidebar.open { width: 280px; }
+.ts-header {
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.ts-title { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--purple); }
+.ts-count { background: var(--purple-dim); color: var(--purple); font-size: 10px; font-family: var(--mono); padding: 2px 7px; border-radius: 10px; font-weight: 700; }
+.ts-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+.ts-item {
+  background: var(--surface2); border: 1px solid var(--border); border-left: 3px solid var(--purple);
+  border-radius: var(--radius); padding: 9px 11px; cursor: pointer; transition: all 0.12s;
+}
+.ts-item:hover { background: var(--purple-dim); border-color: var(--purple); }
+.ts-serial { font-family: var(--mono); font-size: 12px; color: var(--purple); font-weight: 600; }
+.ts-reason { font-size: 10px; color: var(--muted2); margin-top: 2px; font-family: var(--mono); }
+
+/* ── INVENTORY VIEW ── */
+#view-inventory { flex-direction: column; overflow: hidden; }
+.inv-toolbar {
+  padding: 14px 20px; background: var(--surface); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex-shrink: 0;
+}
+.search-wrap { position: relative; flex: 1; min-width: 200px; }
+.search-wrap input { padding-left: 34px; }
+.search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--muted2); font-size: 14px; pointer-events: none; }
+.inv-table-wrap { flex: 1; overflow-y: auto; }
+.inv-table { width: 100%; border-collapse: collapse; }
+.inv-table th {
+  position: sticky; top: 0; background: var(--surface);
+  padding: 10px 16px; text-align: left; font-size: 10px; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted2);
+  font-family: var(--mono); border-bottom: 1px solid var(--border);
+  cursor: pointer; user-select: none; white-space: nowrap; z-index: 5;
+}
+.inv-table th:hover { color: var(--text); }
+.inv-table th .sort-arrow { font-size: 9px; margin-left: 3px; color: var(--accent); }
+.inv-table td { padding: 11px 16px; border-bottom: 1px solid rgba(42,47,74,0.5); font-family: var(--mono); font-size: 12px; vertical-align: middle; }
+.inv-table tr:hover td { background: var(--surface2); cursor: pointer; }
+.inv-table tr.selected-row td { background: var(--accent-dim); }
+.td-serial { color: var(--accent); font-weight: 600; }
+.td-loc { color: var(--cyan); }
+.td-actions { display: flex; gap: 5px; }
+
+/* ── TRANSFERS VIEW ── */
+#view-transfers { flex-direction: column; overflow: hidden; }
+.transfers-content { flex: 1; overflow-y: auto; padding: 20px; }
+.transfers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.transfer-card {
+  background: var(--surface); border: 1px solid var(--border); border-top: 3px solid var(--purple);
+  border-radius: var(--radius); padding: 16px; cursor: pointer; transition: all 0.12s;
+}
+.transfer-card:hover { border-color: var(--purple); box-shadow: 0 0 0 1px var(--purple); }
+.tc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.tc-serial { font-family: var(--mono); font-size: 14px; color: var(--accent); font-weight: 600; }
+.tc-reason-badge { font-size: 9px; font-weight: 700; letter-spacing: 0.8px; padding: 3px 8px; border-radius: 3px; font-family: var(--mono); text-transform: uppercase; }
+.reason-stock { background: var(--blue-dim); color: var(--blue); }
+.reason-pickup { background: var(--green-dim); color: var(--green); }
+.reason-return { background: var(--cyan-dim); color: var(--cyan); }
+.reason-sold-removal { background: var(--red-dim); color: var(--red); }
+.tc-info { font-size: 11px; color: var(--muted2); display: flex; flex-direction: column; gap: 3px; }
+.tc-actions { display: flex; gap: 6px; margin-top: 12px; }
+
+/* ── ADMIN VIEW ── */
+#view-admin { flex-direction: row; overflow: hidden; }
+.admin-nav {
+  width: 200px; flex-shrink: 0; background: var(--surface);
+  border-right: 1px solid var(--border); padding: 16px 10px;
+  display: flex; flex-direction: column; gap: 2px; overflow-y: auto;
+}
+.admin-nav-btn {
+  padding: 9px 12px; font-family: var(--sans); font-size: 12px; font-weight: 600;
+  color: var(--muted2); background: none; border: none; border-left: 2px solid transparent;
+  border-radius: var(--radius); cursor: pointer; text-align: left; transition: all 0.12s;
+  display: flex; align-items: center; gap: 8px;
+}
+.admin-nav-btn:hover { color: var(--text); background: var(--surface2); }
+.admin-nav-btn.active { color: var(--text); background: var(--surface2); border-left-color: var(--accent); }
+.admin-nav-section { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); font-family: var(--mono); padding: 10px 12px 4px; }
+.admin-content { flex: 1; overflow-y: auto; padding: 24px; }
+.admin-panel { display: none; flex-direction: column; gap: 20px; }
+.admin-panel.active { display: flex; }
+.admin-panel-title { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+.admin-panel-sub { font-size: 13px; color: var(--muted2); margin-bottom: 8px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+.card-title { font-size: 13px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+
+.role-list { display: flex; flex-direction: column; gap: 8px; }
+.role-row {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius); cursor: pointer; transition: all 0.12s;
+}
+.role-row:hover { border-color: var(--border2); }
+.role-row.selected { border-color: var(--accent); background: var(--accent-dim); }
+.role-color-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.role-name { font-weight: 600; font-size: 13px; flex: 1; }
+.role-member-count { font-size: 11px; color: var(--muted2); font-family: var(--mono); }
+.perm-section { margin-bottom: 16px; }
+.perm-section-title { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); font-family: var(--mono); margin-bottom: 8px; }
+
+.user-row { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-bottom: 1px solid var(--border); transition: background 0.12s; }
+.user-row:hover { background: var(--surface2); }
+.user-avatar-sm { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #0c0e14; flex-shrink: 0; }
+.user-info { flex: 1; }
+.user-username { font-weight: 600; font-size: 13px; }
+.user-email { font-size: 11px; color: var(--muted2); font-family: var(--mono); margin-top: 2px; }
+.user-status { font-size: 10px; font-family: var(--mono); white-space: nowrap; }
+.status-active { color: var(--green); }
+.status-locked { color: var(--red); }
+
+.status-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.status-color-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.status-name { flex: 1; font-weight: 600; font-size: 13px; }
+.status-locked-badge { font-size: 9px; color: var(--muted); font-family: var(--mono); }
+
+/* ── DETAIL PANEL ── */
+#detail-panel {
+  position: fixed; top: 52px; right: 0; bottom: 0; width: 320px;
+  background: var(--surface); border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  transform: translateX(100%); transition: transform 0.22s ease;
+  z-index: 80; box-shadow: -4px 0 24px rgba(0,0,0,0.3);
+}
+#detail-panel.open { transform: translateX(0); }
+.dp-header { padding: 16px 18px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; flex-shrink: 0; }
+.dp-serial { font-family: var(--mono); font-size: 18px; color: var(--accent); font-weight: 700; }
+.dp-type { font-size: 13px; color: var(--text2); margin-top: 2px; }
+.dp-close { background: none; border: none; color: var(--muted2); cursor: pointer; font-size: 18px; line-height: 1; padding: 2px; transition: color 0.12s; }
+.dp-close:hover { color: var(--text); }
+.dp-body { flex: 1; overflow-y: auto; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+.dp-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+.dp-key { color: var(--muted2); font-family: var(--mono); }
+.dp-val { color: var(--text); font-family: var(--mono); font-weight: 600; text-align: right; max-width: 180px; word-break: break-word; }
+.dp-actions { padding: 14px 18px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 7px; flex-shrink: 0; }
+
+/* ── MODALS ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(4px); z-index: 200;
+  display: none; align-items: center; justify-content: center; padding: 20px;
+}
+.modal-overlay.open { display: flex; animation: fadein 0.15s ease; }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+.modal {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 28px; width: 100%; max-width: 460px; max-height: 85vh;
+  overflow-y: auto; box-shadow: var(--shadow); animation: slideUp 0.2s ease;
+}
+.modal-lg { max-width: 600px; }
+@keyframes slideUp { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.modal-sub { font-size: 12px; color: var(--muted2); font-family: var(--mono); margin-bottom: 20px; }
+.modal-body { display: flex; flex-direction: column; gap: 14px; }
+.modal-footer { display: flex; gap: 8px; margin-top: 20px; justify-content: flex-end; }
+.modal-footer .btn { min-width: 90px; }
+
+/* ACTIVITY LOG */
+.log-entry { padding: 10px 12px; border-left: 2px solid var(--border2); margin-left: 8px; position: relative; font-size: 12px; }
+.log-entry::before { content: ''; position: absolute; left: -5px; top: 14px; width: 8px; height: 8px; border-radius: 50%; background: var(--border2); }
+.log-entry.log-add::before { background: var(--green); }
+.log-entry.log-move::before { background: var(--cyan); }
+.log-entry.log-sell::before { background: var(--red); }
+.log-entry.log-transfer::before { background: var(--purple); }
+.log-entry.log-verify::before { background: var(--accent); }
+.log-entry.log-edit::before { background: var(--blue); }
+.log-action { font-weight: 700; color: var(--text); }
+.log-user { color: var(--accent); font-family: var(--mono); }
+.log-time { font-size: 10px; color: var(--muted2); font-family: var(--mono); margin-top: 2px; }
+.log-detail { color: var(--muted2); margin-top: 2px; }
+
+#tooltip {
+  position: fixed; background: var(--surface); border: 1px solid var(--border2);
+  border-radius: var(--radius); padding: 8px 12px; font-family: var(--mono);
+  font-size: 11px; pointer-events: none; z-index: 300; display: none;
+  max-width: 220px; box-shadow: var(--shadow);
+}
+
+#toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--surface2); border: 1px solid var(--border2);
+  padding: 10px 22px; border-radius: 20px; font-family: var(--mono);
+  font-size: 12px; transition: transform 0.22s ease; z-index: 400;
+  white-space: nowrap; pointer-events: none;
+}
+#toast.show { transform: translateX(-50%) translateY(0); }
+#toast.success { border-color: var(--green); color: var(--green); }
+#toast.error { border-color: var(--red); color: var(--red); }
+#toast.info { border-color: var(--cyan); color: var(--cyan); }
+
+.empty-state { text-align: center; padding: 48px 24px; color: var(--muted2); font-family: var(--mono); font-size: 12px; line-height: 2; }
+.empty-icon { font-size: 32px; margin-bottom: 12px; opacity: 0.4; }
+
+.color-picker-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.color-picker-row:last-child { border-bottom: none; }
+.cp-label { flex: 1; font-size: 13px; }
+.cp-sub { font-size: 11px; color: var(--muted2); }
+input[type="color"] { width: 36px; height: 28px; padding: 1px 2px; cursor: pointer; border-radius: 4px; background: var(--surface3); border-color: var(--border2); }
+
+/* LAYOUT EDITOR */
+.le-col-label-edit, .le-row-label-edit {
+  background: none; border: none; color: var(--muted2); font-family: var(--mono);
+  font-size: 10px; text-align: center; cursor: text; width: 100%; padding: 2px; border-radius: 3px;
+}
+.le-col-label-edit:focus, .le-row-label-edit:focus { background: var(--surface2); border: 1px solid var(--accent); color: var(--text); outline: none; }
+
+/* Edit item modal fields */
+.edit-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* ── Location combo-box ── */
+.loc-combo-wrap { position: relative; }
+#modal-move .field, #modal-restore-item .field { position: relative; }
+
+/* Change role modal */
+#modal-change-role .role-option {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+  cursor: pointer; transition: all 0.12s; margin-bottom: 6px;
+}
+#modal-change-role .role-option:hover { border-color: var(--border2); }
+#modal-change-role .role-option.selected { border-color: var(--accent); background: var(--accent-dim); }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="screen-loading" style="height:100vh;display:flex;align-items:center;justify-content:center;
+  background:var(--bg);">
+  <div style="text-align:center;max-width:480px;padding:0 24px;">
+    <div style="font-size:22px;font-weight:800;letter-spacing:-0.3px;margin-bottom:8px;">
+      FLOOR<span style="color:var(--accent);">TRACK</span>
+    </div>
+    <div style="font-size:11px;color:var(--muted2);font-family:var(--mono);letter-spacing:2px;margin-bottom:24px;">
+      WAREHOUSE INVENTORY SYSTEM
+    </div>
+    <div id="loading-msg" style="font-size:12px;color:var(--muted2);font-family:var(--mono);margin-bottom:12px;">
+      Connecting...
+    </div>
+    <div id="loading-detail" style="font-size:11px;color:var(--red);font-family:var(--mono);
+      display:none;background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.3);
+      border-radius:6px;padding:12px;text-align:left;word-break:break-all;margin-bottom:12px;"></div>
+    <button id="loading-retry" onclick="location.reload()" style="display:none;
+      background:var(--accent);color:#0c0e14;border:none;padding:8px 20px;
+      font-family:var(--mono);font-size:12px;font-weight:700;border-radius:6px;cursor:pointer;">
+      Retry
+    </button>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div id="screen-setup" class="hidden">
+  <div class="setup-card">
+    <div class="setup-logo">FLOOR<span>TRACK</span></div>
+    <div class="setup-sub">WAREHOUSE INVENTORY SYSTEM</div>
+    <div class="setup-step">First Launch — Step 1 of 1</div>
+    <div class="setup-title">Create Admin Account</div>
+    <div class="setup-desc">You're the first user. Set up your admin credentials to get started. You can create additional users from inside the app.</div>
+    <div class="modal-body">
+      <div class="field"><label>Username</label><input type="text" id="setup-username" placeholder="e.g. jsmith" autocomplete="off" /></div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="setup-pw" placeholder="Min. 8 characters" oninput="checkPwStrength(this.value)" />
+        <div class="pw-strength" id="pw-strength-bar"></div>
+        <div class="pw-hint" id="pw-hint">Enter a password</div>
+      </div>
+      <div class="field"><label>Confirm Password</label><input type="password" id="setup-pw2" placeholder="Repeat password" /></div>
+      <button class="btn btn-primary w-full" onclick="completeSetup()" style="margin-top:8px;">Create Account & Launch →</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="screen-login" class="hidden">
+  <div class="login-card">
+    <div class="login-logo">FLOOR<span>TRACK</span></div>
+    <div class="login-tagline">WAREHOUSE INVENTORY SYSTEM</div>
+    <div class="login-error" id="login-error"></div>
+    <div class="modal-body">
+      <div class="field"><label>Username</label><input type="text" id="login-user" placeholder="Enter username" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()" /></div>
+      <div class="field"><label>Password</label><input type="password" id="login-pw" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()" /></div>
+      <div class="attempts-bar" id="attempts-bar" style="display:none;">
+        <div class="attempt-dot" id="dot0"></div>
+        <div class="attempt-dot" id="dot1"></div>
+        <div class="attempt-dot" id="dot2"></div>
+      </div>
+      <button class="btn btn-primary w-full" onclick="doLogin()" id="login-btn">Sign In</button>
+      <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+        <button onclick="resetApp()" style="background:none;border:none;font-size:11px;color:var(--muted2);font-family:var(--mono);cursor:pointer;text-decoration:underline;padding:4px 8px;">Reset &amp; start over</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="screen-app" class="hidden">
+
+  <div id="topbar">
+    <div class="topbar-logo">FLOOR<span>TRACK</span></div>
+    <div class="topbar-nav" id="topbar-nav">
+      <button class="nav-btn active" data-view="map" onclick="switchView('map')"><span class="nav-icon">⬛</span>Floor Map</button>
+      <button class="nav-btn" data-view="inventory" onclick="switchView('inventory')"><span class="nav-icon">📦</span>Inventory</button>
+      <button class="nav-btn" data-view="transfers" onclick="switchView('transfers')">
+        <span class="nav-icon">🔄</span>Transfers
+        <span id="transfer-badge" style="background:var(--purple);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-family:var(--mono);display:none;">0</span>
+      </button>
+      <button class="nav-btn sold-only" id="nav-sold" data-view="sold" onclick="switchView('sold')"><span class="nav-icon">🏷</span>Sold Items <span id="sold-badge" style="background:var(--red);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-family:var(--mono);display:none;">0</span></button>
+      <button class="nav-btn admin-only" data-view="admin" onclick="switchView('admin')"><span class="nav-icon">⚙</span>Admin</button>
+    </div>
+    <div class="topbar-right">
+      <div id="save-indicator" style="display:none;font-size:10px;font-family:var(--mono);letter-spacing:0.5px;padding:3px 8px;border-radius:3px;"></div>
+      <button class="btn btn-sm btn-purple" id="transfer-toggle-btn" onclick="toggleTransferSidebar()" style="display:none;">⇄ Transfers</button>
+      <!-- FIX: user-chip now has position:relative so dropdown positions correctly -->
+      <div class="user-chip" id="user-chip" onclick="toggleUserMenu(event)">
+        <div class="user-avatar" id="topbar-avatar">A</div>
+        <div>
+          <div class="user-name" id="topbar-username">Admin</div>
+          <div class="user-role-label" id="topbar-role">Admin</div>
+        </div>
+        <!-- FIX: user dropdown defined and functional -->
+        <div class="user-dropdown" id="user-dropdown">
+          <div class="udrop-header">
+            <div class="udrop-username" id="udrop-name">—</div>
+            <div class="udrop-role" id="udrop-role">—</div>
+          </div>
+          <button class="udrop-item" onclick="openChangePasswordModal()">🔑 Change Password</button>
+          <button class="udrop-item danger" onclick="doLogout()">↩ Sign Out</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="app-body">
+
+    <!-- FLOOR MAP VIEW -->
+    <div class="view active" id="view-map">
+      <div class="map-sidebar">
+        <div class="sidebar-tabs">
+          <button class="stab active" onclick="switchStab('add')">+ Add Item</button>
+          <button class="stab" onclick="switchStab('search')">Search</button>
+        </div>
+        <!-- ADD PANEL -->
+        <div class="stab-panel active" id="stab-add">
+          <div class="section-head">New Item</div>
+          <div class="field"><label>Model #</label><input type="text" id="add-model" placeholder="e.g. WTW5000DW" autocomplete="off" /></div>
+          <div class="field"><label>Serial #</label><input type="text" id="add-serial" placeholder="e.g. SN-48291" autocomplete="off" /></div>
+          <div class="field">
+            <label>Appliance Type</label>
+            <select id="add-type">
+              <option value="">— Select type —</option>
+              <option>Refrigerator</option><option>Washer</option><option>Dryer</option>
+              <option>Dishwasher</option><option>Range / Stove</option><option>Microwave</option>
+              <option>Freezer</option><option>Wall Oven</option><option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Condition Notes</label>
+            <textarea id="add-damage" placeholder="Describe condition (dents, scratches, missing parts...)" style="font-size:12px;min-height:56px;resize:vertical;"></textarea>
+          </div>
+          <div class="field"><label>Location</label><input type="text" id="add-loc-select" placeholder="Type to filter locations..." autocomplete="off"
+            oninput="locComboShow(this,'add-loc-drop')"
+            onfocus="locComboShow(this,'add-loc-drop')"
+            onblur="locComboBlur(this,'add-loc-drop')" /></div>
+          <div class="field"><label>Notes</label><input type="text" id="add-notes" placeholder="Brand, color, additional info..." /></div>
+          <button class="btn btn-primary w-full" onclick="addItem()">Add to Inventory</button>
+        </div>
+        <!-- SEARCH PANEL -->
+        <div class="stab-panel" id="stab-search">
+          <div class="search-wrap"><span class="search-icon">⌕</span><input type="text" id="sidebar-search" placeholder="Serial, type, location..." oninput="renderSidebarList()" /></div>
+          <select id="sf-type" style="font-size:11px;padding:6px;" onchange="renderSidebarList()">
+            <option value="">All types</option>
+            <option>Refrigerator</option><option>Washer</option><option>Dryer</option>
+            <option>Dishwasher</option><option>Range / Stove</option><option>Microwave</option>
+            <option>Freezer</option><option>Wall Oven</option><option>Other</option>
+          </select>
+          <div id="sidebar-list" style="display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex:1;">
+            <div class="empty-state"><div class="empty-icon">📦</div>No items yet</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAP AREA -->
+      <div class="map-area" id="map-area">
+        <div class="map-toolbar">
+          <div class="map-title">WAREHOUSE FLOOR MAP</div>
+          <div class="map-legend">
+            <div class="legend-item"><div class="legend-swatch" style="background:rgba(240,165,0,0.1);border-color:rgba(240,165,0,0.35);"></div>1 item</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:var(--cyan-dim);border-color:rgba(0,212,200,0.35);"></div>Multiple</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:var(--purple-dim);border-color:rgba(155,109,255,0.4);"></div>Transfer</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:rgba(255,77,109,0.13);border-color:rgba(255,77,109,0.45);"></div>Sold</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:var(--bg);border-color:var(--border);border-style:dashed;"></div>Aisle</div>
+          </div>
+        </div>
+        <div id="warehouse-grid-wrap"></div>
+      </div>
+
+      <!-- TRANSFER SIDEBAR -->
+      <div id="transfer-sidebar">
+        <div class="ts-header">
+          <div class="ts-title">Transfers</div>
+          <div class="ts-count" id="ts-count">0</div>
+        </div>
+        <div class="ts-list" id="ts-list">
+          <div class="empty-state" style="padding:20px;"><div class="empty-icon">🔄</div>No active transfers</div>
+        </div>
+      </div>
+    </div><!-- /view-map -->
+
+    <!-- INVENTORY VIEW -->
+    <div class="view" id="view-inventory">
+      <div class="inv-toolbar">
+        <div class="search-wrap"><span class="search-icon">⌕</span><input type="text" id="inv-search" placeholder="Search inventory..." oninput="renderInventoryTable()" /></div>
+        <select id="inv-filter-type" style="width:140px;" onchange="renderInventoryTable()">
+          <option value="">All types</option>
+          <option>Refrigerator</option><option>Washer</option><option>Dryer</option>
+          <option>Dishwasher</option><option>Range / Stove</option><option>Microwave</option>
+          <option>Freezer</option><option>Wall Oven</option><option>Other</option>
+        </select>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted2);cursor:pointer;">
+          <input type="checkbox" id="inv-show-sold" onchange="renderInventoryTable()" style="width:auto;" /> Show sold
+        </label>
+        <div style="margin-left:auto;font-size:11px;font-family:var(--mono);color:var(--muted2);" id="inv-count"></div>
+      </div>
+      <div class="inv-table-wrap">
+        <table class="inv-table">
+          <thead>
+            <tr>
+              <th onclick="sortInv('serial')">SERIAL # <span class="sort-arrow" id="sort-serial"></span></th>
+              <th onclick="sortInv('model')">MODEL # <span class="sort-arrow" id="sort-model"></span></th>
+              <th onclick="sortInv('type')">TYPE <span class="sort-arrow" id="sort-type"></span></th>
+              <th onclick="sortInv('location')">LOCATION <span class="sort-arrow" id="sort-location"></span></th>
+              <th>CONDITION NOTES</th>
+              <th onclick="sortInv('status')">STATUS <span class="sort-arrow" id="sort-status"></span></th>
+              <th>NOTES</th>
+              <th onclick="sortInv('added')">ADDED <span class="sort-arrow" id="sort-added"></span></th>
+              <th>ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody id="inv-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TRANSFERS VIEW -->
+    <div class="view" id="view-transfers">
+      <div class="inv-toolbar">
+        <div class="map-title">ACTIVE TRANSFERS</div>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted2);cursor:pointer;margin-left:auto;">
+          <input type="checkbox" id="show-completed-transfers" onchange="renderTransfersView()" style="width:auto;" /> Show completed
+        </label>
+      </div>
+      <div class="transfers-content">
+        <div class="transfers-grid" id="transfers-grid"></div>
+      </div>
+    </div>
+
+    <!-- SOLD ITEMS VIEW -->
+    <div class="view" id="view-sold">
+      <div class="inv-toolbar">
+        <div class="map-title">SOLD ITEMS</div>
+        <div style="font-size:11px;font-family:var(--mono);color:var(--muted2);margin-left:8px;" id="sold-count"></div>
+        <div style="margin-left:auto;font-size:11px;font-family:var(--mono);color:var(--muted2);">Items remain on floor map until transferred out</div>
+      </div>
+      <div class="inv-table-wrap">
+        <table class="inv-table">
+          <thead>
+            <tr>
+              <th>MODEL #</th>
+              <th>SERIAL #</th>
+              <th>TYPE</th>
+              <th>LOCATION</th>
+              <th>CONDITION NOTES</th>
+              <th>NOTES</th>
+              <th>SOLD ON</th>
+              <th>FLOOR STATUS</th>
+              <th>ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody id="sold-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ADMIN VIEW -->
+    <div class="view" id="view-admin">
+      <div class="admin-nav">
+        <div class="admin-nav-section">People</div>
+        <button class="admin-nav-btn active" data-apanel="users" onclick="switchAdminPanel('users')">👤 Users</button>
+        <button class="admin-nav-btn" data-apanel="roles" onclick="switchAdminPanel('roles')">🎖 Roles</button>
+        <div class="admin-nav-section">Warehouse</div>
+        <button class="admin-nav-btn" data-apanel="layout" onclick="switchAdminPanel('layout')">🗺 Layout</button>
+        <button class="admin-nav-btn" data-apanel="statuses" onclick="switchAdminPanel('statuses')">🏷 Statuses</button>
+        <div class="admin-nav-section">Integrations</div>
+        <button class="admin-nav-btn" data-apanel="sheets" onclick="switchAdminPanel('sheets')">📊 Google Sheets</button>
+        <div class="admin-nav-section">System</div>
+        <button class="admin-nav-btn" data-apanel="colors" onclick="switchAdminPanel('colors')">🎨 Colors</button>
+        <button class="admin-nav-btn" data-apanel="notifications" onclick="switchAdminPanel('notifications')">🔔 Notifications</button>
+        <button class="admin-nav-btn" data-apanel="auditlog" onclick="switchAdminPanel('auditlog')">📋 Audit Log</button>
+      </div>
+      <div class="admin-content">
+
+        <!-- USERS PANEL -->
+        <div class="admin-panel active" id="apanel-users">
+          <div>
+            <div class="admin-panel-title">User Management</div>
+            <div class="admin-panel-sub">Add, edit, and manage user access and roles.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Users <button class="btn btn-sm btn-primary" onclick="openAddUserModal()">+ Add User</button></div>
+            <div id="users-list"></div>
+          </div>
+        </div>
+
+        <!-- ROLES PANEL -->
+        <div class="admin-panel" id="apanel-roles">
+          <div>
+            <div class="admin-panel-title">Role Manager</div>
+            <div class="admin-panel-sub">Create custom roles and assign permissions.</div>
+          </div>
+          <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;">
+            <div class="card" style="padding:12px;">
+              <div class="card-title" style="font-size:12px;">Roles <button class="btn btn-sm btn-primary" onclick="openNewRoleModal()">+</button></div>
+              <div class="role-list" id="roles-list"></div>
+            </div>
+            <div class="card" id="role-editor-card">
+              <div class="empty-state"><div class="empty-icon">🎖</div>Select a role to edit</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LAYOUT PANEL -->
+        <div class="admin-panel" id="apanel-layout">
+          <div>
+            <div class="admin-panel-title">Warehouse Layout Editor</div>
+            <div class="admin-panel-sub">Click cells to select, type a letter to set column. Use toolbar to set row names, faces, and sections.</div>
+          </div>
+          <div class="card" style="padding:10px 14px;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-size:10px;color:var(--muted2);font-family:var(--mono);">SIZE</span>
+                <input type="number" id="le-grid-rows" value="12" min="2" max="60" style="width:50px;padding:4px 6px;font-size:12px;" />
+                <span style="font-size:11px;color:var(--muted2);">×</span>
+                <input type="number" id="le-grid-cols" value="20" min="2" max="80" style="width:50px;padding:4px 6px;font-size:12px;" />
+                <button class="btn btn-sm btn-primary" onclick="initCanvas()">Create</button>
+              </div>
+              <div style="width:1px;height:20px;background:var(--border);"></div>
+              <div style="display:flex;align-items:center;gap:4px;">
+                <span style="font-size:10px;color:var(--muted2);font-family:var(--mono);">ROWS</span>
+                <button class="btn btn-sm btn-secondary" onclick="leAddRow()" title="Add row">+</button>
+                <button class="btn btn-sm btn-secondary" id="le-remove-row-btn" onclick="leRemoveRow()" title="Remove last row">−</button>
+                <span style="font-size:10px;color:var(--muted2);font-family:var(--mono);margin-left:6px;">COLS</span>
+                <button class="btn btn-sm btn-secondary" onclick="leAddCol()" title="Add column">+</button>
+                <button class="btn btn-sm btn-secondary" id="le-remove-col-btn" onclick="leRemoveCol()" title="Remove last column">−</button>
+              </div>
+              <div style="width:1px;height:20px;background:var(--border);"></div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-size:10px;color:var(--muted2);font-family:var(--mono);">CELL W</span>
+                <input type="number" id="le-cell-w" value="48" min="28" max="120" style="width:50px;padding:4px 6px;font-size:12px;" oninput="leUpdateCellSize()" />
+                <span style="font-size:10px;color:var(--muted2);font-family:var(--mono);">H</span>
+                <input type="number" id="le-cell-h" value="48" min="28" max="120" style="width:50px;padding:4px 6px;font-size:12px;" oninput="leUpdateCellSize()" />
+              </div>
+              <div style="width:1px;height:20px;background:var(--border);"></div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-size:10px;color:var(--muted2);font-family:var(--mono);">ROW NAME</span>
+                <!-- FIX: oninput now debounces leApplyToolbarNow -->
+                <input type="text" id="le-tb-row" placeholder="e.g. 226" style="width:90px;padding:4px 8px;font-size:12px;font-weight:700;color:var(--accent);"
+                  oninput="leToolbarDebounce()"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();leApplyToolbarNow();showToast('Row name applied','success');}" />
+                <button class="btn btn-sm btn-primary" onclick="leApplyToolbarNow();showToast('Row name applied','success')" style="padding:4px 10px;">Apply</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:4px;">
+                <span style="font-size:10px;color:var(--muted2);font-family:var(--mono);">FACE</span>
+                <button class="btn btn-sm" id="face-btn-top" onclick="leSetFace('top')" style="padding:4px 8px;">Top</button>
+                <button class="btn btn-sm" id="face-btn-bottom" onclick="leSetFace('bottom')" style="padding:4px 8px;">Bottom</button>
+                <button class="btn btn-sm" id="face-btn-single" onclick="leSetFace('single')" style="padding:4px 8px;">Single</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:4px;">
+                <span style="font-size:10px;color:var(--muted2);font-family:var(--mono);">LABEL</span>
+                <button class="btn btn-sm" id="label-btn-left" onclick="leSetLabel('left')" style="padding:4px 8px;">Left</button>
+                <button class="btn btn-sm" id="label-btn-right" onclick="leSetLabel('right')" style="padding:4px 8px;">Right</button>
+                <button class="btn btn-sm" id="label-btn-both" onclick="leSetLabel('both')" style="padding:4px 8px;">Both</button>
+              </div>
+              <div style="width:1px;height:20px;background:var(--border);"></div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-size:10px;color:var(--muted2);font-family:var(--mono);">SECTION</span>
+                <!-- FIX: oninput now debounces leApplyToolbarNow -->
+                <input type="text" id="le-tb-section" placeholder="e.g. Main Floor" style="width:110px;padding:4px 8px;font-size:12px;"
+                  oninput="leToolbarDebounce()"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();leApplyToolbarNow();showToast('Section applied','success');}" />
+                <button class="btn btn-sm btn-secondary" onclick="leApplyToolbarNow();showToast('Section applied','success')" style="padding:4px 10px;">Apply</button>
+              </div>
+              <div style="width:1px;height:20px;background:var(--border);"></div>
+              <div style="display:flex;align-items:center;gap:4px;">
+                <button class="btn btn-sm btn-secondary" id="type-btn-rack" onclick="leSetTypeSel('rack')" style="padding:4px 8px;">Rack</button>
+                <button class="btn btn-sm btn-secondary" id="type-btn-aisle" onclick="leSetTypeSel('aisle')" style="padding:4px 8px;">Aisle</button>
+                <button class="btn btn-sm btn-secondary" id="type-btn-empty" onclick="leSetTypeSel('empty')" style="padding:4px 8px;">Empty</button>
+              </div>
+              <div style="width:1px;height:20px;background:var(--border);"></div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-size:10px;color:var(--muted2);font-family:var(--mono);">FILL FROM</span>
+                <input type="text" id="le-fill-start" placeholder="a" style="width:40px;padding:4px 6px;font-size:12px;text-align:center;" />
+                <button class="btn btn-sm btn-cyan" onclick="leAutoFillCols()" style="padding:4px 10px;">Fill →</button>
+              </div>
+              <button class="btn btn-sm btn-danger" onclick="clearCanvas()" style="margin-left:auto;padding:4px 10px;">Clear All</button>
+            </div>
+          </div>
+          <!-- Layout Actions Bar -->
+          <div class="card" style="padding:10px 14px;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-size:10px;color:var(--muted2);font-family:var(--mono);letter-spacing:1.4px;">LAYOUT FILE</span>
+                <button class="btn btn-sm btn-primary" onclick="exportLayout()" title="Download current layout as a .json file">&#11015; Save Layout</button>
+                <button class="btn btn-sm btn-secondary" onclick="importLayout()" title="Load a previously saved layout .json file">&#11014; Load Layout</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="overflow:auto;padding:12px;position:relative;">
+            <div id="le-canvas-wrap" style="display:inline-block;position:relative;user-select:none;"></div>
+          </div>
+          <div id="le-ctx-menu" style="display:none;position:fixed;background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:4px;z-index:500;box-shadow:var(--shadow);min-width:160px;"></div>
+          <div style="font-size:10px;color:var(--muted2);font-family:var(--mono);padding:4px 0;" id="le-status-bar">No cells selected</div>
+        </div>
+
+        <!-- GOOGLE SHEETS PANEL -->
+        <div class="admin-panel" id="apanel-sheets">
+          <div>
+            <div class="admin-panel-title">Google Sheets Sync</div>
+            <div class="admin-panel-sub">Connect to your Google Sheet via Apps Script. All changes in FloorTrack push to the sheet in real time.</div>
+          </div>
+
+          <!-- Connection card -->
+          <div class="card">
+            <div class="card-title">Connection</div>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div class="field">
+                <label>Apps Script URL</label>
+                <input type="text" id="sheets-url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off" oninput="sheetsClearDiag()" />
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                <button class="btn btn-primary" onclick="sheetsConnect()">Connect</button>
+                <button class="btn btn-cyan" onclick="sheetsTest()">Test Connection</button>
+                <button class="btn btn-secondary" onclick="sheetsDisconnect()">Disconnect</button>
+                <div id="sheets-status" style="font-size:11px;font-family:var(--mono);color:var(--muted2);">Not connected</div>
+              </div>
+              <div id="sheets-diag" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;font-size:11px;font-family:var(--mono);line-height:1.9;"></div>
+            </div>
+          </div>
+
+          <!-- Sync card -->
+          <div class="card" id="sheets-sync-card" style="display:none;">
+            <div class="card-title">Sync</div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div style="font-size:12px;color:var(--muted2);font-family:var(--mono);line-height:1.8;">
+                The sheet is the master copy. Pull imports all rows into FloorTrack (skipping serials already present).<br>
+                All changes you make in FloorTrack are pushed to the sheet automatically.
+              </div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button class="btn btn-cyan" onclick="sheetsPull()">⬇ Pull from Sheet</button>
+                <button class="btn btn-secondary" onclick="sheetsPushAll()">⬆ Push All to Sheet</button>
+              </div>
+              <div id="sheets-sync-log" style="font-size:11px;font-family:var(--mono);color:var(--muted2);max-height:160px;overflow-y:auto;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px;display:none;"></div>
+            </div>
+          </div>
+
+          <!-- Instructions card -->
+          <div class="card">
+            <div class="card-title">Setup Instructions</div>
+            <ol style="font-size:12px;color:var(--muted2);line-height:2;padding-left:18px;font-family:var(--mono);">
+              <li>Open your Google Sheet</li>
+              <li>Click <strong style="color:var(--text);">Extensions → Apps Script</strong></li>
+              <li>Delete everything and paste the contents of <strong style="color:var(--accent);">FloorTrack_Sheets.gs</strong></li>
+              <li>Update <strong style="color:var(--text);">SHEET_NAME</strong> if your tab isn't named "Sheet1"</li>
+              <li>Click <strong style="color:var(--text);">Deploy → New deployment → Web app</strong></li>
+              <li>Set <em>Execute as</em>: <strong style="color:var(--text);">Me</strong> · <em>Who has access</em>: <strong style="color:var(--text);">Anyone</strong></li>
+              <li>Copy the Web app URL and paste it above, then click Connect</li>
+              <li>Click <strong style="color:var(--cyan);">Pull from Sheet</strong> to import your inventory</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- STATUSES PANEL -->
+        <div class="admin-panel" id="apanel-statuses">
+          <div>
+            <div class="admin-panel-title">Custom Statuses</div>
+            <div class="admin-panel-sub">Create custom item and transfer statuses with colors.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Statuses <button class="btn btn-sm btn-primary" onclick="openNewStatusModal()">+ New Status</button></div>
+            <div id="statuses-list"></div>
+          </div>
+        </div>
+
+        <!-- COLORS PANEL -->
+        <div class="admin-panel" id="apanel-colors">
+          <div>
+            <div class="admin-panel-title">Display Colors</div>
+            <div class="admin-panel-sub">Customize highlight colors for each item status on the floor map.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Map Cell Colors</div>
+            <div id="color-settings-list"></div>
+          </div>
+        </div>
+
+        <!-- NOTIFICATIONS PANEL -->
+        <div class="admin-panel" id="apanel-notifications">
+          <div>
+            <div class="admin-panel-title">Notification Preferences</div>
+            <div class="admin-panel-sub">Choose which events trigger an email to all admins.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Security</div>
+            <div class="toggle-wrap"><div class="toggle-info"><div class="t-name">New user created</div><div class="t-desc">Notify when any admin creates a new user account</div></div><label class="toggle"><input type="checkbox" checked id="notif-new-user"><span class="toggle-slider"></span></label></div>
+            <div class="toggle-wrap"><div class="toggle-info"><div class="t-name">New user first login</div><div class="t-desc">Notify when a new user signs in for the first time</div></div><label class="toggle"><input type="checkbox" checked id="notif-first-login"><span class="toggle-slider"></span></label></div>
+            <div class="toggle-wrap"><div class="toggle-info"><div class="t-name">Account locked out</div><div class="t-desc">Notify when an account is locked after 3 failed attempts</div></div><label class="toggle"><input type="checkbox" checked id="notif-lockout"><span class="toggle-slider"></span></label></div>
+          </div>
+          <div class="card">
+            <div class="card-title">User Management</div>
+            <div class="toggle-wrap"><div class="toggle-info"><div class="t-name">User role changed</div><div class="t-desc">Notify when a user's role is modified</div></div><label class="toggle"><input type="checkbox" checked id="notif-role-change"><span class="toggle-slider"></span></label></div>
+            <div class="toggle-wrap"><div class="toggle-info"><div class="t-name">User deleted</div><div class="t-desc">Notify when a user account is removed</div></div><label class="toggle"><input type="checkbox" checked id="notif-user-deleted"><span class="toggle-slider"></span></label></div>
+            <div class="toggle-wrap"><div class="toggle-info"><div class="t-name">User unlocked</div><div class="t-desc">Notify when a locked account is manually unlocked</div></div><label class="toggle"><input type="checkbox" id="notif-unlock"><span class="toggle-slider"></span></label></div>
+          </div>
+          <div class="card">
+            <div class="card-title">System</div>
+            <div class="toggle-wrap"><div class="toggle-info"><div class="t-name">Layout edited</div><div class="t-desc">Notify when the warehouse layout is modified</div></div><label class="toggle"><input type="checkbox" id="notif-layout"><span class="toggle-slider"></span></label></div>
+            <div class="toggle-wrap"><div class="toggle-info"><div class="t-name">Bulk items modified</div><div class="t-desc">Notify on bulk add, move, or sell operations</div></div><label class="toggle"><input type="checkbox" id="notif-bulk"><span class="toggle-slider"></span></label></div>
+          </div>
+        </div>
+
+        <!-- AUDIT LOG PANEL -->
+        <div class="admin-panel" id="apanel-auditlog">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+            <div>
+              <div class="admin-panel-title">Audit Log</div>
+              <div class="admin-panel-sub">All system activity, timestamped and attributed.</div>
+            </div>
+            <button class="btn btn-sm btn-secondary" onclick="manualArchiveLogs()" style="flex-shrink:0;">
+              📁 Archive &amp; Purge Old Logs
+            </button>
+          </div>
+          <div class="card">
+            <div id="audit-log-list"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /app-body -->
+</div><!-- /screen-app -->
+
+<!-- DETAIL PANEL -->
+<div id="detail-panel">
+  <div class="dp-header">
+    <div>
+      <div class="dp-serial" id="dp-serial">—</div>
+      <div class="dp-type" id="dp-type">—</div>
+    </div>
+    <button class="dp-close" onclick="closeDetail()">✕</button>
+  </div>
+  <div class="dp-body" id="dp-body"></div>
+  <div class="dp-actions" id="dp-actions"></div>
+</div>
+
+<!-- MODALS -->
+
+<!-- MOVE MODAL -->
+<div class="modal-overlay" id="modal-move">
+  <div class="modal">
+    <div class="modal-title">Move Item</div>
+    <div class="modal-sub" id="move-item-label">—</div>
+    <div class="modal-body">
+      <div class="field"><label>New Location</label><input type="text" id="move-loc-select" placeholder="Type to filter locations..." autocomplete="off"
+        oninput="locComboShow(this,'move-loc-drop')"
+        onfocus="locComboShow(this,'move-loc-drop')"
+        onblur="locComboBlur(this,'move-loc-drop')" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-move')">Cancel</button>
+      <button class="btn btn-cyan" onclick="confirmMove()">Move</button>
+    </div>
+  </div>
+</div>
+
+<!-- TRANSFER MODAL -->
+<div class="modal-overlay" id="modal-transfer">
+  <div class="modal">
+    <div class="modal-title">Initiate Transfer</div>
+    <div class="modal-sub" id="transfer-item-label">—</div>
+    <div class="modal-body">
+      <div class="field"><label>Transfer Reason</label>
+        <select id="transfer-reason">
+          <option value="">— Select reason —</option>
+          <option value="stock">Store Stock — Going to store floor inventory</option>
+          <option value="pickup">Customer Pickup — Sold, collecting at store</option>
+          <option value="return">Store Return — Coming back to warehouse</option>
+          <option value="sold-removal">Sold Removal — Remove sold item from floor</option>
+        </select>
+      </div>
+      <div class="field"><label>Notes</label><input type="text" id="transfer-notes" placeholder="Optional details..." /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-transfer')">Cancel</button>
+      <button class="btn btn-purple" onclick="confirmTransfer()">Initiate Transfer</button>
+    </div>
+  </div>
+</div>
+
+<!-- SELL MODAL -->
+<div class="modal-overlay" id="modal-sell">
+  <div class="modal">
+    <div class="modal-title">Mark as Sold</div>
+    <div class="modal-sub" id="sell-item-label">—</div>
+    <div class="modal-body">
+      <div style="background:var(--red-dim);border:1px solid var(--red);border-radius:var(--radius);padding:12px 14px;font-size:12px;font-family:var(--mono);color:var(--red);">
+        This marks the item as sold. It will remain on the floor map highlighted in red until it is transferred out via a Sold Removal or Store Stock transfer.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-sell')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmSell()">Confirm Sold</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESTORE ITEM MODAL -->
+<div class="modal-overlay" id="modal-restore-item">
+  <div class="modal">
+    <div class="modal-title">Return to Inventory</div>
+    <div class="modal-sub" id="restore-item-label">—</div>
+    <div class="modal-body">
+      <div style="background:var(--green-dim);border:1px solid var(--green);border-radius:var(--radius);padding:10px 14px;font-size:12px;font-family:var(--mono);color:var(--green);margin-bottom:4px;">
+        This item will be re-activated at the selected location.
+      </div>
+      <div class="field"><label>New Location</label><input type="text" id="restore-loc-select" placeholder="Type to filter locations..." autocomplete="off"
+        oninput="locComboShow(this,'restore-loc-drop')"
+        onfocus="locComboShow(this,'restore-loc-drop')"
+        onblur="locComboBlur(this,'restore-loc-drop')" /></div>
+      <div class="field"><label>Notes (optional)</label><input type="text" id="restore-notes" placeholder="Reason for return..." /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-restore-item')">Cancel</button>
+      <button class="btn btn-green" onclick="confirmRestoreItem()">Return to Inventory</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT ITEM MODAL -->
+<div class="modal-overlay" id="modal-edit-item">
+  <div class="modal modal-lg">
+    <div class="modal-title">Edit Item</div>
+    <div class="modal-sub" id="edit-item-label">—</div>
+    <div class="modal-body">
+      <div class="edit-field-row">
+        <div class="field"><label>Serial #</label><input type="text" id="edit-serial" readonly style="opacity:0.6;cursor:not-allowed;" /></div>
+        <div class="field"><label>Model #</label><input type="text" id="edit-model" placeholder="e.g. WTW5000DW" /></div>
+      </div>
+      <div class="field">
+        <label>Appliance Type</label>
+        <select id="edit-type">
+          <option value="">— Select type —</option>
+          <option>Refrigerator</option><option>Washer</option><option>Dryer</option>
+          <option>Dishwasher</option><option>Range / Stove</option><option>Microwave</option>
+          <option>Freezer</option><option>Wall Oven</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field"><label>Condition Notes</label><textarea id="edit-damage" placeholder="Describe condition..." style="min-height:60px;"></textarea></div>
+      <div class="field"><label>Notes</label><input type="text" id="edit-notes" placeholder="Brand, color, additional info..." /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-edit-item')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmEditItem()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ACTIVITY LOG MODAL -->
+<div class="modal-overlay" id="modal-activitylog">
+  <div class="modal modal-lg">
+    <div class="modal-title">Activity Log</div>
+    <div class="modal-sub" id="log-item-label">—</div>
+    <div id="activity-log-body" style="display:flex;flex-direction:column;gap:0;margin-top:8px;"></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-activitylog')">Close</button></div>
+  </div>
+</div>
+
+<!-- ADD USER MODAL -->
+<div class="modal-overlay" id="modal-add-user">
+  <div class="modal">
+    <div class="modal-title" id="add-user-title">Add User</div>
+    <div class="modal-sub">New users will receive credentials from an admin.</div>
+    <div class="modal-body">
+      <div class="field"><label>Username</label><input type="text" id="new-user-username" placeholder="e.g. jsmith" autocomplete="off" /></div>
+      <div class="field"><label>Password</label><input type="password" id="new-user-pw" placeholder="Min. 8 characters" /></div>
+      <div class="field"><label>Role</label><select id="new-user-role"></select></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-add-user')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmAddUser()">Create User</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE ROLE MODAL (FIX: replaces prompt()) -->
+<div class="modal-overlay" id="modal-change-role">
+  <div class="modal">
+    <div class="modal-title">Change Role</div>
+    <div class="modal-sub" id="change-role-username-label">—</div>
+    <div class="modal-body">
+      <div id="change-role-options"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-change-role')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmChangeRole()">Save Role</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE PASSWORD MODAL -->
+<div class="modal-overlay" id="modal-change-password">
+  <div class="modal">
+    <div class="modal-title">Change Password</div>
+    <div class="modal-sub" id="change-pw-label">Update your password</div>
+    <div class="modal-body">
+      <div class="field"><label>Current Password</label><input type="password" id="cp-current" placeholder="Enter current password" /></div>
+      <div class="field"><label>New Password</label><input type="password" id="cp-new" placeholder="Min. 8 characters" /></div>
+      <div class="field"><label>Confirm New Password</label><input type="password" id="cp-confirm" placeholder="Repeat new password" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-change-password')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmChangePassword()">Update Password</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW ROLE MODAL -->
+<div class="modal-overlay" id="modal-new-role">
+  <div class="modal">
+    <div class="modal-title">New Role</div>
+    <div class="modal-sub">Name and color your role, then set permissions in the editor.</div>
+    <div class="modal-body">
+      <div class="field"><label>Role Name</label><input type="text" id="new-role-name" placeholder="e.g. Receiving" /></div>
+      <div class="field"><label>Role Color</label><input type="color" id="new-role-color" value="#f0a500" style="height:36px;" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-new-role')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmNewRole()">Create Role</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW STATUS MODAL -->
+<div class="modal-overlay" id="modal-new-status">
+  <div class="modal">
+    <div class="modal-title">New Status</div>
+    <div class="modal-body">
+      <div class="field"><label>Status Name</label><input type="text" id="new-status-name" placeholder="e.g. Quarantine" /></div>
+      <div class="field"><label>Color</label><input type="color" id="new-status-color" value="#9b6dff" style="height:36px;" /></div>
+      <div class="field"><label>Appears In</label>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;text-transform:none;letter-spacing:0;color:var(--text);cursor:pointer;"><input type="checkbox" id="ns-item" checked style="width:auto;" /> Item status dropdown</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;text-transform:none;letter-spacing:0;color:var(--text);cursor:pointer;"><input type="checkbox" id="ns-transfer" style="width:auto;" /> Transfer reason dropdown</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;text-transform:none;letter-spacing:0;color:var(--text);cursor:pointer;"><input type="checkbox" id="ns-filter" checked style="width:auto;" /> Filter options</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-new-status')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmNewStatus()">Create Status</button>
+    </div>
+  </div>
+</div>
+
+<!-- TRANSFER DETAIL MODAL -->
+<div class="modal-overlay" id="modal-transfer-detail">
+  <div class="modal modal-lg">
+    <div class="modal-title" id="tmd-title">Transfer Detail</div>
+    <div class="modal-sub" id="tmd-sub">—</div>
+    <div id="tmd-body" style="display:flex;flex-direction:column;gap:0;"></div>
+    <div class="modal-footer" id="tmd-footer"></div>
+  </div>
+</div>
+
+<div id="tooltip"></div>
+<div id="toast"></div>
+
+<script>
+// ── ENVIRONMENT DETECTION ──
+// GAS = true when running inside Apps Script (/exec URL).
+// When falsy (local file, artifact preview, GitHub Pages) we fall back to localStorage.
+const GAS = typeof google !== 'undefined' && google.script && google.script.run;
+
+// localStorage helpers used in standalone mode
+const lsDB = {
+  save(db) { try { localStorage.setItem('ft-db', JSON.stringify(db)); return true; } catch(e) { return false; } },
+  load()   { try { const r = localStorage.getItem('ft-db'); return r ? JSON.parse(r) : null; } catch(e) { return null; } },
+  clear()  { try { localStorage.removeItem('ft-db'); } catch(e) {} }
+};
+
+// 
+// STATE
+// 
+let DB = {
+  users: [], inventory: [], transfers: [], log: [],
+  layout: { canvas: [], canvasRows: 12, canvasCols: 20, cellW: 48, cellH: 48 },
+  layouts: [], activeLayoutId: null,
+  roles: [
+    { id: 'admin',     name: 'Admin',     color: '#f0a500', locked: true, perms: allPerms() },
+    { id: 'manager',   name: 'Manager',   color: '#4d9fff', locked: true, perms: managerPerms() },
+    { id: 'warehouse', name: 'Warehouse', color: '#3ecf6a', locked: true, perms: warehousePerms() },
+    { id: 'sales',     name: 'Sales',     color: '#9b6dff', locked: true, perms: salesPerms() }
+  ],
+  statuses: [
+    { id: 'in-stock',         name: 'In Stock',         color: '#f0a500', locked: true, showItem: true,  showTransfer: false, showFilter: true,  active: true },
+    { id: 'sold',             name: 'Sold',             color: '#5a6080', locked: true, showItem: true,  showTransfer: false, showFilter: true,  active: true },
+    { id: 'transfer-stock',   name: 'Store Stock',      color: '#4d9fff', locked: true, showItem: false, showTransfer: true,  showFilter: true,  active: true },
+    { id: 'transfer-pickup',  name: 'Customer Pickup',  color: '#3ecf6a', locked: true, showItem: false, showTransfer: true,  showFilter: true,  active: true },
+    { id: 'transfer-return',  name: 'Store Return',     color: '#00d4c8', locked: true, showItem: false, showTransfer: true,  showFilter: true,  active: true }
+  ],
+  colors: {
+    empty: '#1a1e2e', occupied: 'rgba(240,165,0,0.1)', multi: 'rgba(0,212,200,0.12)',
+    transfer: 'rgba(155,109,255,0.12)', stale: 'rgba(255,77,109,0.12)', space: 'transparent'
+  },
+  notifications: { newUser: true, firstLogin: true, lockout: true, roleChange: true, userDeleted: true, userUnlocked: false, layoutEdit: false, bulkModify: false },
+  settings: { initialized: false }
+};
+
+let session = null;
+let selectedSerial = null;
+let invSort = { key: 'added', asc: false };
+let selectedRoleId = null;
+let pendingMoveSerial = null;
+let pendingTransferSerial = null;
+let pendingSellSerial = null;
+let pendingEditSerial = null;
+let pendingChangeRoleUsername = null;
+let pendingSelectedRoleId = null;
+
+function allPerms() {
+  return { viewInventory:true, addItems:true, editItems:true, moveItems:true, markSold:true, markVerified:true,
+    initiateTransfer:true, verifyTransfer:true, viewTransferHistory:true, viewMap:true, editLayout:true,
+    viewLogs:true, manageUsers:true, manageRoles:true, viewAudit:true };
+}
+function managerPerms() {
+  return { viewInventory:true, addItems:true, editItems:true, moveItems:true, markSold:true, markVerified:true,
+    initiateTransfer:true, verifyTransfer:true, viewTransferHistory:true, viewMap:true, editLayout:false,
+    viewLogs:true, manageUsers:false, manageRoles:false, viewAudit:false };
+}
+function warehousePerms() {
+  return { viewInventory:true, addItems:true, editItems:false, moveItems:true, markSold:false, markVerified:true,
+    initiateTransfer:false, verifyTransfer:true, viewTransferHistory:true, viewMap:true, editLayout:false,
+    viewLogs:false, manageUsers:false, manageRoles:false, viewAudit:false };
+}
+function salesPerms() {
+  return { viewInventory:true, addItems:false, editItems:false, moveItems:false, markSold:false, markVerified:false,
+    initiateTransfer:false, verifyTransfer:false, viewTransferHistory:true, viewMap:true, editLayout:false,
+    viewLogs:false, manageUsers:false, manageRoles:false, viewAudit:false };
+}
+
+const PERM_DEFS = [
+  { section: 'Inventory', perms: [
+    { key: 'viewInventory', name: 'View Inventory & Search', desc: 'Browse and search all items' },
+    { key: 'addItems',      name: 'Add Items',               desc: 'Add new items to inventory' },
+    { key: 'editItems',     name: 'Edit Item Details',       desc: 'Modify item info' },
+    { key: 'moveItems',     name: 'Move Items',              desc: 'Change item grid location' },
+    { key: 'markSold',      name: 'Mark Items as Sold',      desc: 'Remove items from active inventory' },
+    { key: 'markVerified',  name: 'Mark Items as Verified',  desc: 'Confirm item presence and location' }
+  ]},
+  { section: 'Transfers', perms: [
+    { key: 'initiateTransfer',    name: 'Initiate Transfers',    desc: 'Send items to/from store' },
+    { key: 'verifyTransfer',      name: 'Verify Transfers',      desc: 'Complete or cancel transfers' },
+    { key: 'viewTransferHistory', name: 'View Transfer History', desc: 'See completed transfers' }
+  ]},
+  { section: 'Warehouse', perms: [
+    { key: 'viewMap',    name: 'View Floor Map',         desc: 'See the warehouse grid' },
+    { key: 'editLayout', name: 'Edit Warehouse Layout',  desc: 'Rename rows/cols, toggle spaces' }
+  ]},
+  { section: 'Users & Admin', perms: [
+    { key: 'viewLogs',    name: 'View Activity Logs',  desc: 'See per-item logs' },
+    { key: 'manageUsers', name: 'Manage Users',        desc: 'Add, remove, edit users' },
+    { key: 'manageRoles', name: 'Create & Edit Roles', desc: 'Manage role permissions' },
+    { key: 'viewAudit',   name: 'View Audit Log',      desc: 'See all system activity' }
+  ]}
+];
+
+//  Password hashing  uses browser's built-in crypto.subtle 
+function hashPw(pw) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(pw);
+  return crypto.subtle.digest('SHA-256', data).then(buf => {
+    return Array.from(new Uint8Array(buf))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+  });
+}
+
+//  STORAGE  server-backed via PropertiesService 
+
+let _saveTimer   = null;   // debounce handle
+let _savePending = false;  // true while a write is in flight
+
+function saveDB() {
+  // In-memory DB is always current  debounce the server write
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(_flushDB, 300);
+}
+
+function _flushDB() {
+  _saveTimer   = null;
+  _savePending = true;
+  setSaveIndicator('saving');
+
+  const archived = purgeOldLogs();
+  const json = JSON.stringify(DB);
+
+  if (GAS) {
+    google.script.run
+      .withSuccessHandler(res => {
+        _savePending = false;
+        if (res && res.ok) {
+          setSaveIndicator('saved');
+        } else {
+          setSaveIndicator('error');
+          console.error('saveDB failed:', res && res.error);
+        }
+        if (archived.length) {
+          google.script.run
+            .withFailureHandler(err => console.warn('archiveLogs failed:', err.message))
+            .archiveLogs(archived);
+        }
+      })
+      .withFailureHandler(err => {
+        _savePending = false;
+        setSaveIndicator('error');
+        console.error('saveDB error:', err.message);
+      })
+      .saveDB(json);
+  } else {
+    // Standalone mode — persist to localStorage
+    const ok = lsDB.save(DB);
+    _savePending = false;
+    setSaveIndicator(ok ? 'saved' : 'error');
+  }
+}
+
+function _flushNow() {
+  clearTimeout(_saveTimer);
+  _flushDB();
+}
+
+//  Save indicator 
+let _savedTimer = null;
+function setSaveIndicator(state) {
+  const el = document.getElementById('save-indicator');
+  if (!el) return;
+  clearTimeout(_savedTimer);
+  if (state === 'saving') {
+    el.textContent   = 'o Saving';
+    el.style.color   = 'var(--muted2)';
+    el.style.display = '';
+  } else if (state === 'saved') {
+    el.textContent   = 'v Saved';
+    el.style.color   = 'var(--green)';
+    el.style.display = '';
+    _savedTimer = setTimeout(() => { el.style.display = 'none'; }, 2000);
+  } else if (state === 'error') {
+    el.textContent   = '! Save failed';
+    el.style.color   = 'var(--red)';
+    el.style.display = '';
+    showToast('Save failed -- check your connection', 'error');
+  }
+}
+
+//  Audit log purge 
+function purgeOldLogs() {
+  const cutoff = Date.now() - 180 * 24 * 60 * 60 * 1000;
+  const keep = [], removed = [];
+  (DB.log || []).forEach(e => {
+    (new Date(e.ts).getTime() < cutoff ? removed : keep).push(e);
+  });
+  if (removed.length) DB.log = keep;
+  return removed;
+}
+
+function manualArchiveLogs() {
+  const cutoff = Date.now() - 180 * 24 * 60 * 60 * 1000;
+  const toArchive = (DB.log || []).filter(e => new Date(e.ts).getTime() < cutoff);
+  if (!toArchive.length) { showToast('No entries older than 6 months to archive', 'info'); return; }
+  DB.log = (DB.log || []).filter(e => new Date(e.ts).getTime() >= cutoff);
+  saveDB();
+  if (GAS) {
+    google.script.run
+      .withSuccessHandler(res => {
+        if (res && res.ok) showToast(`Archived ${toArchive.length} log entries to Drive`, 'success');
+        else showToast('Archive failed: ' + (res && res.error), 'error');
+      })
+      .withFailureHandler(err => showToast('Archive failed: ' + err.message, 'error'))
+      .archiveLogs(toArchive);
+  } else {
+    showToast(`Archived ${toArchive.length} log entries (local mode)`, 'success');
+  }
+  renderAuditLog();
+}
+
+//  DB parse/apply 
+function applyParsedDB(parsed) {
+  DB = parsed;
+  if (!DB.layout)        DB.layout = { canvas:[], canvasRows:12, canvasCols:20, cellW:48, cellH:48 };
+  if (!DB.layout.canvas) DB.layout.canvas = [];
+  if (!DB.layout.cellW)  DB.layout.cellW = 48;
+  if (!DB.layout.cellH)  DB.layout.cellH = 48;
+  if (!DB.colors)        DB.colors = { empty:'#1a1e2e', occupied:'rgba(240,165,0,0.1)', multi:'rgba(0,212,200,0.12)', transfer:'rgba(155,109,255,0.12)', stale:'rgba(255,77,109,0.12)', space:'transparent' };
+  if (!DB.statuses)      DB.statuses = [];
+  if (!DB.roles)         DB.roles = [];
+  if (!DB.layouts || !DB.layouts.length) {
+    const migrated = Object.assign({ id: 'plan-1', name: 'Warehouse 1' }, DB.layout);
+    DB.layouts = [migrated];
+    DB.activeLayoutId = 'plan-1';
+  }
+  if (!DB.activeLayoutId) DB.activeLayoutId = DB.layouts[0].id;
+  DB.layout = getActiveLayout();
+}
+
+// Returns the active layout object (always a direct reference into DB.layouts)
+function getActiveLayout() {
+  if (!DB.layouts || !DB.layouts.length) {
+    const plan = { id: 'plan-1', name: 'Warehouse 1', canvas: [], canvasRows: 12, canvasCols: 20, cellW: 48, cellH: 48 };
+    DB.layouts = [plan];
+    DB.activeLayoutId = 'plan-1';
+    return plan;
+  }
+  return DB.layouts.find(l => l.id === DB.activeLayoutId) || DB.layouts[0];
+}
+
+function resetApp() {
+  if (!confirm('Reset everything? All data will be lost.')) return;
+  if (GAS) {
+    google.script.run
+      .withSuccessHandler(() => location.reload())
+      .withFailureHandler(() => location.reload())
+      .resetDB();
+  } else {
+    lsDB.clear();
+    location.reload();
+  }
+}
+
+// 
+// BOOT  dual-mode: Apps Script server OR localStorage standalone
+//
+window.onload = () => {
+  if (GAS) {
+    // ── Apps Script mode ──
+    showScreen('loading');
+    setLoadingMsg('Connecting...');
+
+    const bootTimeout = setTimeout(() => {
+      setLoadingMsg(
+        'Connection timed out. Make sure you are opening the /exec URL (not a local file), ' +
+        'and that the script is deployed as a Web App. Then click Retry.',
+        true
+      );
+    }, 12000);
+
+    google.script.run
+      .withSuccessHandler(exists => {
+        clearTimeout(bootTimeout);
+        if (exists) {
+          setLoadingMsg('Loading data...');
+          google.script.run
+            .withSuccessHandler(json => {
+              if (json) { try { applyParsedDB(JSON.parse(json)); } catch(e) { setLoadingMsg('DB parse error: ' + e.message, true); return; } }
+              initLayout();
+              showScreen('login');
+              populateLocInputs();
+            })
+            .withFailureHandler(err => setLoadingMsg('Failed to load DB: ' + err.message, true))
+            .getDB();
+        } else {
+          setLoadingMsg('Checking for existing data...');
+          const local = lsDB.load();
+          if (local) {
+            setLoadingMsg('Migrating local data to server...');
+            try { applyParsedDB(local); } catch(e) { setLoadingMsg('Migration parse error: ' + e.message, true); return; }
+            google.script.run
+              .withSuccessHandler(() => {
+                lsDB.clear();
+                initLayout();
+                showScreen(DB.settings.initialized ? 'login' : 'setup');
+                populateLocInputs();
+              })
+              .withFailureHandler(err => setLoadingMsg('Migration save failed: ' + err.message, true))
+              .saveDB(JSON.stringify(DB));
+          } else {
+            initLayout();
+            showScreen('setup');
+          }
+        }
+      })
+      .withFailureHandler(err => {
+        clearTimeout(bootTimeout);
+        setLoadingMsg('Connection error: ' + err.message, true);
+      })
+      .dbExists();
+
+  } else {
+    // ── Standalone / localStorage mode ──
+    const saved = lsDB.load();
+    if (saved) {
+      try { applyParsedDB(saved); } catch(e) { console.warn('DB parse error', e); }
+    }
+    initLayout();
+    showScreen(DB.settings && DB.settings.initialized ? 'login' : 'setup');
+    populateLocInputs();
+  }
+};
+
+function showScreen(name) {
+  const ids = ['screen-loading','screen-setup','screen-login','screen-app'];
+  const map  = { loading:'screen-loading', setup:'screen-setup', login:'screen-login', app:'screen-app' };
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('hidden', id !== map[name]);
+  });
+}
+
+function show(id) { // legacy alias used by older call sites
+  ['screen-setup','screen-login','screen-app'].forEach(s => {
+    const el = document.getElementById(s);
+    if (el) el.classList.toggle('hidden', s !== id);
+  });
+}
+
+function setLoadingMsg(msg, isError) {
+  const el = document.getElementById('loading-msg');
+  const detail = document.getElementById('loading-detail');
+  const retry = document.getElementById('loading-retry');
+  if (el) {
+    el.textContent = isError ? 'Failed to load.' : msg;
+    el.style.color = isError ? 'var(--red)' : 'var(--muted2)';
+  }
+  if (isError && detail) {
+    detail.textContent = msg;
+    detail.style.display = 'block';
+  }
+  if (isError && retry) retry.style.display = 'inline-block';
+}
+
+window.addEventListener('beforeunload', () => { if (_saveTimer !== null) _flushNow(); });
+
+
+
+// 
+// SETUP
+// 
+function checkPwStrength(pw) {
+  const bar = document.getElementById('pw-strength-bar');
+  const hint = document.getElementById('pw-hint');
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  const colors = ['#ff4d6d','#f0a500','#4d9fff','#3ecf6a'];
+  const labels = ['Weak','Fair','Good','Strong'];
+  bar.style.width = (score * 25) + '%';
+  bar.style.background = colors[score-1] || '#2a2f4a';
+  hint.textContent = score === 0 ? 'Enter a password' : labels[score-1];
+  hint.style.color = colors[score-1] || 'var(--muted2)';
+}
+
+async function completeSetup() {
+  const username = document.getElementById('setup-username').value.trim();
+  const pw  = document.getElementById('setup-pw').value;
+  const pw2 = document.getElementById('setup-pw2').value;
+  if (!username) return showToast('Username required', 'error');
+  if (pw.length < 8) return showToast('Password must be 8+ characters', 'error');
+  if (pw !== pw2) return showToast('Passwords do not match', 'error');
+
+  const btn = document.querySelector('#screen-setup .btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+
+  const hash = await hashPw(pw);
+  DB.users.push({ username, passwordHash: hash, roleId: 'admin', locked: false, failedAttempts: 0, firstLogin: true, created: now() });
+  DB.settings.initialized = true;
+  initLayout();
+  addLog('SYSTEM', 'SETUP', `Admin account created: ${username}`);
+
+  // Write directly to server and wait for confirmation before proceeding
+  const json = JSON.stringify(DB);
+  if (GAS) {
+    google.script.run
+      .withSuccessHandler(res => {
+        if (btn) { btn.disabled = false; btn.textContent = 'Create Account & Launch ->'; }
+        if (!res || !res.ok) {
+          showToast('Save failed -- please try again', 'error');
+          return;
+        }
+        showScreen('login');
+        populateLocInputs();
+        showToast('Account created. Sign in.', 'success');
+      })
+      .withFailureHandler(err => {
+        if (btn) { btn.disabled = false; btn.textContent = 'Create Account & Launch ->'; }
+        showToast('Save failed: ' + err.message, 'error');
+      })
+      .saveDB(json);
+  } else {
+    lsDB.save(DB);
+    if (btn) { btn.disabled = false; btn.textContent = 'Create Account & Launch ->'; }
+    showScreen('login');
+    populateLocInputs();
+    showToast('Account created. Sign in.', 'success');
+  }
+}
+
+// 
+// LOGIN
+// 
+async function doLogin() {
+  const username = document.getElementById('login-user').value.trim();
+  const pw = document.getElementById('login-pw').value;
+  const errEl = document.getElementById('login-error');
+  const btn = document.getElementById('login-btn');
+
+  const user = DB.users.find(u => u.username === username);
+  if (!user) {
+    errEl.textContent = 'User not found.';
+    errEl.classList.add('show');
+    return;
+  }
+  if (user.locked) {
+    errEl.textContent = 'Account locked. Contact your administrator.';
+    errEl.classList.add('show');
+    document.getElementById('attempts-bar').style.display = 'none';
+    return;
+  }
+
+  const hash = await hashPw(pw);
+  if (hash !== user.passwordHash) {
+    user.failedAttempts = (user.failedAttempts || 0) + 1;
+    const remaining = 3 - user.failedAttempts;
+    document.getElementById('attempts-bar').style.display = 'flex';
+    for (let i = 0; i < 3; i++) {
+      document.getElementById('dot' + i).classList.toggle('used', i < user.failedAttempts);
+    }
+    if (user.failedAttempts >= 3) {
+      user.locked = true;
+      saveDB();
+      addLog(username, 'LOCKOUT', `Account locked after 3 failed attempts`);
+      saveDB();
+      errEl.textContent = 'Account locked after 3 failed attempts. Contact admin.';
+      errEl.classList.add('show');
+      document.getElementById('attempts-bar').style.display = 'none';
+      btn.disabled = true;
+    } else {
+      saveDB();
+      errEl.textContent = `Incorrect password. ${remaining} attempt${remaining===1?'':'s'} remaining.`;
+      errEl.classList.add('show');
+    }
+    return;
+  }
+
+  // Success
+  user.failedAttempts = 0;
+  const isFirstLogin = user.firstLogin;
+  if (isFirstLogin) user.firstLogin = false;
+  saveDB();
+
+  const role = DB.roles.find(r => r.id === user.roleId) || DB.roles[0];
+  session = { username: user.username, roleId: user.roleId, roleName: role.name, roleColor: role.color, perms: role.perms };
+
+  addLog(username, 'LOGIN', `Signed in${isFirstLogin ? ' (first login)' : ''}`);
+  saveDB();
+  launchApp();
+}
+
+function doLogout() {
+  closeUserMenu();
+  if (session) addLog(session.username, 'LOGOUT', 'Signed out');
+  saveDB();
+  session = null;
+  selectedSerial = null;
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pw').value = '';
+  document.getElementById('login-error').classList.remove('show');
+  document.getElementById('attempts-bar').style.display = 'none';
+  document.getElementById('login-btn').disabled = false;
+  showScreen('login');
+}
+
+// 
+// APP LAUNCH
+// 
+function launchApp() {
+  showScreen('app');
+  document.getElementById('topbar-username').textContent = session.username;
+  document.getElementById('topbar-role').textContent = session.roleName;
+  document.getElementById('topbar-avatar').textContent = session.username[0].toUpperCase();
+  document.getElementById('topbar-avatar').style.background = session.roleColor;
+  document.getElementById('udrop-name').textContent = session.username;
+  document.getElementById('udrop-role').textContent = session.roleName;
+
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = session.perms.viewAudit ? '' : 'none';
+  });
+  const canSeeSold = session.perms.manageUsers || session.perms.viewAudit;
+  document.querySelectorAll('.sold-only').forEach(el => {
+    el.style.display = canSeeSold ? '' : 'none';
+  });
+
+  const canTransfer = session.perms.initiateTransfer || session.perms.verifyTransfer;
+  document.getElementById('transfer-toggle-btn').style.display = canTransfer ? '' : 'none';
+
+  initLayout();
+  populateLocInputs();
+  renderAll();
+  switchView('map');
+}
+
+// 
+// USER MENU (FIX: was missing entirely)
+// 
+function toggleUserMenu(e) {
+  e.stopPropagation();
+  document.getElementById('user-dropdown').classList.toggle('open');
+}
+function closeUserMenu() {
+  document.getElementById('user-dropdown').classList.remove('open');
+}
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  const chip = document.getElementById('user-chip');
+  if (chip && !chip.contains(e.target)) closeUserMenu();
+});
+
+//  CHANGE PASSWORD (accessible via user menu) 
+function openChangePasswordModal() {
+  closeUserMenu();
+  document.getElementById('cp-current').value = '';
+  document.getElementById('cp-new').value = '';
+  document.getElementById('cp-confirm').value = '';
+  document.getElementById('change-pw-label').textContent = `Changing password for: ${session.username}`;
+  openModal('modal-change-password');
+}
+
+async function confirmChangePassword() {
+  const current = document.getElementById('cp-current').value;
+  const newPw   = document.getElementById('cp-new').value;
+  const confirm = document.getElementById('cp-confirm').value;
+  if (!current) return showToast('Enter current password', 'error');
+  if (newPw.length < 8) return showToast('New password must be 8+ characters', 'error');
+  if (newPw !== confirm) return showToast('Passwords do not match', 'error');
+
+  const user = DB.users.find(u => u.username === session.username);
+  const currentHash = await hashPw(current);
+  if (currentHash !== user.passwordHash) return showToast('Current password incorrect', 'error');
+
+  user.passwordHash = await hashPw(newPw);
+  addLog(session.username, 'PW_CHANGE', 'Password changed');
+  saveDB();
+  closeModal('modal-change-password');
+  showToast('Password updated', 'success');
+}
+
+// 
+// VIEW SWITCHING
+// 
+function switchView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  document.querySelector(`.nav-btn[data-view="${v}"]`).classList.add('active');
+  if (v === 'admin') { renderAdminUsers(); renderAdminRoles(); renderLayoutEditor(); renderStatuses(); renderColorSettings(); renderAuditLog(); }
+  if (v === 'inventory') renderInventoryTable();
+  if (v === 'transfers') renderTransfersView();
+  if (v === 'sold') renderSoldView();
+}
+
+function switchStab(s) {
+  document.querySelectorAll('.stab').forEach((el,i) => el.classList.toggle('active', (s==='add'&&i===0)||(s==='search'&&i===1)));
+  document.getElementById('stab-add').classList.toggle('active', s==='add');
+  document.getElementById('stab-search').classList.toggle('active', s==='search');
+}
+
+function switchAdminPanel(p) {
+  document.querySelectorAll('.admin-panel').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.admin-nav-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('apanel-' + p).classList.add('active');
+  document.querySelector(`.admin-nav-btn[data-apanel="${p}"]`).classList.add('active');
+  if (p === 'sheets') renderSheetsPanel();
+}
+
+// 
+// LOCATION SELECTS
+// 
+//  Location combo-box system 
+// Replaces all <select id="*-loc-select"> with a filterable input+dropdown.
+// Only values that exist in the active layout are accepted on blur.
+
+function populateLocInputs() {
+  // Nothing to pre-load  combo-boxes are populated on focus/input.
+  // This function is called wherever populateLocSelects was called.
+  // It's a no-op because getAllLocations() is called live per interaction.
+}
+
+// Build and show the combo dropdown under the given input
+function locComboShow(inputEl, dropId) {
+  const q = inputEl.value.toLowerCase();
+  const locs = getAllLocations().map(l => l.loc);
+  const filtered = q ? locs.filter(l => l.toLowerCase().includes(q)) : locs;
+
+  let drop = document.getElementById(dropId);
+  if (!drop) {
+    drop = document.createElement('div');
+    drop.id = dropId;
+    drop.style.cssText = `position:absolute;z-index:600;background:var(--surface);
+      border:1px solid var(--border2);border-radius:var(--radius);
+      max-height:200px;overflow-y:auto;width:${inputEl.offsetWidth}px;
+      box-shadow:var(--shadow);font-family:var(--mono);font-size:12px;`;
+    inputEl.parentElement.style.position = 'relative';
+    inputEl.parentElement.appendChild(drop);
+  }
+  drop.style.width = inputEl.offsetWidth + 'px';
+
+  if (!filtered.length) {
+    drop.innerHTML = `<div style="padding:10px 12px;color:var(--muted2);">No locations match</div>`;
+    drop.style.display = 'block';
+    return;
+  }
+
+  drop.innerHTML = filtered.map(l =>
+    `<div data-loc="${l}" style="padding:8px 12px;cursor:pointer;color:var(--text);
+      transition:background 0.1s;" onmousedown="locComboSelect(event,'${inputEl.id}','${dropId}')"
+      onmouseenter="this.style.background='var(--surface2)'"
+      onmouseleave="this.style.background=''">${l}</div>`
+  ).join('');
+  drop.style.display = 'block';
+}
+
+function locComboSelect(e, inputId, dropId) {
+  e.preventDefault();
+  const loc = e.currentTarget.dataset.loc;
+  const inp = document.getElementById(inputId);
+  if (inp) { inp.value = loc; inp.dataset.validLoc = loc; }
+  locComboHide(dropId);
+}
+
+function locComboHide(dropId) {
+  const drop = document.getElementById(dropId);
+  if (drop) drop.style.display = 'none';
+}
+
+// On blur: if the typed value isn't a valid layout loc, revert to last valid or clear
+function locComboBlur(inputEl, dropId) {
+  setTimeout(() => {
+    locComboHide(dropId);
+    const locs = getAllLocations().map(l => l.loc);
+    if (!locs.includes(inputEl.value)) {
+      inputEl.value = inputEl.dataset.validLoc || '';
+    } else {
+      inputEl.dataset.validLoc = inputEl.value;
+    }
+  }, 150);
+}
+
+// Set a combo-box value programmatically (e.g. pre-fill current location)
+function locComboSet(inputId, value) {
+  const inp = document.getElementById(inputId);
+  if (!inp) return;
+  inp.value = value || '';
+  inp.dataset.validLoc = value || '';
+}
+
+// Get the current validated value from a combo-box input
+function locComboGet(inputId) {
+  const inp = document.getElementById(inputId);
+  if (!inp) return '';
+  const locs = getAllLocations().map(l => l.loc);
+  return locs.includes(inp.value) ? inp.value : '';
+}
+
+function getAllLocations() {
+  const result = [], seen = new Set();
+  (getActiveLayout().canvas || []).forEach(cell => {
+    if (cell.type === 'rack' && cell.rowName && cell.col) {
+      const loc = `${cell.rowName}-${cell.col}`;
+      if (!seen.has(loc)) { seen.add(loc); result.push({ loc, rowName: cell.rowName, col: cell.col }); }
+    }
+  });
+  return result.sort((a,b) => a.loc.localeCompare(b.loc, undefined, { numeric: true }));
+}
+
+// Stub kept for any remaining internal calls  routes to populateLocInputs
+function populateLocSelects() { populateLocInputs(); }
+
+// 
+// ADD ITEM
+// 
+function addItem() {
+  if (!session.perms.addItems) return showToast('No permission', 'error');
+  const serial = document.getElementById('add-serial').value.trim().toUpperCase();
+  const model  = document.getElementById('add-model').value.trim().toUpperCase();
+  const type   = document.getElementById('add-type').value;
+  const damage = document.getElementById('add-damage').value.trim();
+  const loc    = locComboGet('add-loc-select');
+  const notes  = document.getElementById('add-notes').value.trim();
+
+  if (!serial) return showToast('Serial number required', 'error');
+  if (!type)   return showToast('Select appliance type', 'error');
+  if (!loc)    return showToast('Select a location', 'error');
+  if (DB.inventory.find(i => i.serial === serial && !i.sold)) return showToast('Serial already in active inventory', 'error');
+
+  const item = { serial, model, type, condition: '', damage, location: loc, notes,
+    added: now(), lastVerified: now(), sold: false, status: 'in-stock' };
+  DB.inventory.push(item);
+  addLog(session.username, 'ADD', `Added ${serial}${model?' ('+model+')':''} -- ${type} at ${loc}`, serial);
+  saveDB();
+  renderAll();
+  sheetsPush('addItem', { serial, model: model||'', location: loc, sale: notes||'', description: damage||'', dateAdded: item.added });
+  showToast(`${serial} added at ${loc}`, 'success');
+
+  // Clear form
+  document.getElementById('add-serial').value     = '';
+  document.getElementById('add-model').value      = '';
+  document.getElementById('add-notes').value      = '';
+  document.getElementById('add-type').value       = '';
+  document.getElementById('add-damage').value     = '';
+  locComboSet('add-loc-select', '');
+}
+
+// 
+// WAREHOUSE GRID
+// FIX: uses leCellW/leCellH instead of hardcoded 56
+// 
+function renderGrid() {
+  const canvas    = DB.layout.canvas || [];
+  // Sold items stay on map until floorRemoved
+  const active    = DB.inventory.filter(i => !i.floorRemoved && i.location);
+  const transfers = DB.transfers.filter(t => t.status === 'active');
+  const occ = {};
+  active.forEach(item => { if (!occ[item.location]) occ[item.location]=[]; occ[item.location].push(item); });
+  const transLocs = new Set(transfers.map(t => t.location));
+  // Track which locs have sold items for red tinting
+  const soldLocs = new Set(DB.inventory.filter(i => i.sold && !i.floorRemoved).map(i => i.location));
+
+  const wrap = document.getElementById('warehouse-grid-wrap');
+  if (!wrap) return;
+
+  const rackCells  = canvas.filter(c => c.type === 'rack');
+  const aisleCells = canvas.filter(c => c.type === 'aisle');
+  if (!rackCells.length && !aisleCells.length) {
+    wrap.innerHTML = `<div style="padding:40px;text-align:center;color:var(--muted2);font-family:var(--mono);font-size:12px;border:1px dashed var(--border);border-radius:8px;">
+      <div style="font-size:24px;margin-bottom:12px;">[warehouse]</div>
+      No layout configured yet.<br>Go to <strong>Admin -> Layout</strong> to build your warehouse floor.
+    </div>`;
+    return;
+  }
+
+  const maxR = canvas.reduce((m,c) => Math.max(m, c.r), 0) + 1;
+  const maxC = canvas.reduce((m,c) => Math.max(m, c.c), 0) + 1;
+  const cellMap = {};
+  canvas.forEach(cell => { cellMap[`${cell.r},${cell.c}`] = cell; });
+
+  // FIX: use saved cell size from DB
+  const CELL = leCellW || 56;
+  const CELLH = leCellH || 56;
+  const GAP = 3, LL = 72, RL = 72;
+
+  // Row label info
+  const rowLabelInfo = {};
+  canvas.forEach(cell => {
+    if (cell.type !== 'rack' || !cell.rowName) return;
+    const key = `${cell.r},${cell.rowName}`;
+    if (!rowLabelInfo[key]) rowLabelInfo[key] = { side: cell.labelSide||'left', firstC: cell.c, lastC: cell.c };
+    else {
+      rowLabelInfo[key].firstC = Math.min(rowLabelInfo[key].firstC, cell.c);
+      rowLabelInfo[key].lastC  = Math.max(rowLabelInfo[key].lastC,  cell.c);
+      if (cell.labelSide) rowLabelInfo[key].side = cell.labelSide;
+    }
+  });
+
+  // Section blocks
+  const sectionBlocks = {};
+  canvas.forEach(cell => {
+    if (!cell.sectionName) return;
+    const k = cell.sectionName;
+    if (!sectionBlocks[k]) sectionBlocks[k] = { name:k, minR:cell.r, maxR:cell.r, minC:cell.c, maxC:cell.c };
+    else {
+      sectionBlocks[k].minR = Math.min(sectionBlocks[k].minR, cell.r);
+      sectionBlocks[k].maxR = Math.max(sectionBlocks[k].maxR, cell.r);
+      sectionBlocks[k].minC = Math.min(sectionBlocks[k].minC, cell.c);
+      sectionBlocks[k].maxC = Math.max(sectionBlocks[k].maxC, cell.c);
+    }
+  });
+
+  const totalW = LL + maxC*(CELL+GAP) - GAP + RL;
+  const totalH = maxR*(CELLH+GAP) - GAP + 24;
+
+  let html = `<div style="position:relative;width:${totalW}px;height:${totalH}px;margin-top:20px;">`;
+
+  // Section labels
+  Object.values(sectionBlocks).forEach(b => {
+    const x = LL + b.minC*(CELL+GAP);
+    const y = b.minR*(CELLH+GAP) - 16;
+    const w = (b.maxC - b.minC + 1)*(CELL+GAP) - GAP;
+    html += `<div style="position:absolute;left:${x}px;top:${y}px;width:${w}px;
+      font-size:9px;font-weight:800;letter-spacing:2px;color:var(--cyan);
+      font-family:var(--mono);text-transform:uppercase;white-space:nowrap;pointer-events:none;">${b.name}</div>`;
+  });
+
+  for (let r = 0; r < maxR; r++) {
+    for (let c = 0; c < maxC; c++) {
+      const cell = cellMap[`${r},${c}`];
+      const x = LL + c*(CELL+GAP);
+      const y = r*(CELLH+GAP);
+      if (!cell || cell.type === 'empty') continue;
+
+      if (cell.type === 'aisle') {
+        html += `<div style="position:absolute;left:${x}px;top:${y}px;width:${CELL}px;height:${CELLH}px;
+          background:var(--bg);border:1px dashed var(--border);border-radius:3px;opacity:0.5;"></div>`;
+        continue;
+      }
+
+      if (cell.type === 'rack') {
+        const loc   = (cell.rowName && cell.col) ? `${cell.rowName}-${cell.col}` : null;
+        const items = loc ? (occ[loc]||[]) : [];
+        const count = items.length;
+        const hasTransfer = loc ? transLocs.has(loc) : false;
+        const isSelected  = items.some(i => i.serial === selectedSerial);
+
+        const below = cellMap[`${r+1},${c}`];
+        const above = cellMap[`${r-1},${c}`];
+        const hasBackBelow  = below && below.type==='rack' && below.rowName===cell.rowName && below.face==='bottom' && cell.face==='top';
+        const hasFrontAbove = above && above.type==='rack' && above.rowName===cell.rowName && above.face==='top'  && cell.face==='bottom';
+
+        const locItems    = loc ? (occ[loc]||[]) : [];
+        const hasSold     = loc ? soldLocs.has(loc) : false;
+        const activeCount = locItems.filter(i => !i.sold).length;
+        const soldCount   = locItems.filter(i => i.sold).length;
+        let bg='var(--surface2)', bc='var(--border)', tc='var(--muted2)';
+        if (count > 1)   { bg='var(--cyan-dim)';    bc='rgba(0,212,200,0.4)';   tc='var(--cyan)'; }
+        if (count === 1) { bg='rgba(240,165,0,0.1)'; bc='rgba(240,165,0,0.4)';  tc='var(--accent)'; }
+        if (hasTransfer && count > 0) { bg='var(--purple-dim)'; bc='rgba(155,109,255,0.45)'; tc='var(--purple)'; }
+        // Sold items: red tint (overrides others if all are sold)
+        if (hasSold && activeCount === 0) { bg='rgba(255,77,109,0.13)'; bc='rgba(255,77,109,0.45)'; tc='var(--red)'; }
+        if (hasSold && activeCount > 0)   { bg='rgba(255,77,109,0.08)'; bc='rgba(255,77,109,0.35)'; tc='var(--red)'; }
+
+        const btop    = hasFrontAbove ? `2px solid var(--border2)` : `1px solid ${bc}`;
+        const bbottom = hasBackBelow  ? `2px solid var(--border2)` : `1px solid ${bc}`;
+        const brad    = hasFrontAbove ? '0 0 3px 3px' : hasBackBelow ? '3px 3px 0 0' : '3px';
+        const selShadow = isSelected ? 'box-shadow:0 0 0 2px var(--cyan);z-index:2;' : '';
+
+        const colText    = cell.col || '';
+        const countBadge = count>1 ? `<div style="position:absolute;top:2px;right:2px;background:${hasSold?'var(--red)':'var(--cyan)'};color:#0c0e14;font-size:7px;font-weight:700;padding:0 3px;border-radius:2px;line-height:14px;">${count}</div>` : '';
+        const soldDot    = (hasSold&&soldCount>0) ? `<div style="position:absolute;top:2px;left:2px;width:5px;height:5px;border-radius:50%;background:var(--red);" title="${soldCount} sold"></div>` : '';
+        const tDot       = (hasTransfer&&count>0) ? `<div style="position:absolute;bottom:3px;right:3px;width:5px;height:5px;border-radius:50%;background:var(--purple);"></div>` : '';
+        const cursor     = loc ? 'cursor:pointer;' : '';
+        const handlers   = loc ? `onclick="cellClick('${loc}')" onmouseenter="showCellTooltip(event,'${loc}')" onmouseleave="hideTip()"` : '';
+        const fontSize   = Math.max(10, Math.min(15, CELL * 0.28)) + 'px';
+
+        html += `<div ${handlers} style="position:absolute;left:${x}px;top:${y}px;width:${CELL}px;height:${CELLH}px;
+          background:${bg};border-left:1px solid ${bc};border-right:1px solid ${bc};
+          border-top:${btop};border-bottom:${bbottom};border-radius:${brad};
+          display:flex;align-items:center;justify-content:center;
+          font-family:var(--mono);font-size:${fontSize};font-weight:700;color:${tc};
+          overflow:hidden;${cursor}${selShadow}">
+          ${colText}${countBadge}${soldDot}${tDot}
+        </div>`;
+
+        // Row name labels
+        const rlKey = `${r},${cell.rowName}`;
+        const rl = rowLabelInfo[rlKey];
+        if (rl) {
+          const side    = rl.side || 'left';
+          const isFirst = c === rl.firstC;
+          const isLast  = c === rl.lastC;
+          const labelFontSize = Math.min(13, Math.max(9, CELLH * 0.23)) + 'px';
+          const labelStyle = `position:absolute;top:${y}px;height:${CELLH}px;display:flex;align-items:center;
+            font-family:var(--mono);font-size:${labelFontSize};font-weight:800;color:var(--accent);
+            white-space:nowrap;letter-spacing:0.5px;`;
+
+          if ((side==='left'||side==='both') && isFirst) {
+            html += `<div style="${labelStyle}left:0;width:${LL-4}px;justify-content:flex-end;padding-right:8px;">${cell.rowName}</div>`;
+          }
+          if ((side==='right'||side==='both') && isLast) {
+            html += `<div style="${labelStyle}left:${LL+maxC*(CELL+GAP)}px;width:${RL-4}px;justify-content:flex-start;padding-left:8px;">${cell.rowName}</div>`;
+          }
+        }
+      }
+    }
+  }
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+function cellClick(loc) {
+  const items = DB.inventory.filter(i => !i.sold && i.location === loc);
+  if (!items.length) return;
+  if (items.length === 1) {
+    openDetail(items[0].serial);
+  } else {
+    switchStab('search');
+    document.getElementById('sidebar-search').value = loc;
+    renderSidebarList();
+  }
+}
+
+function showCellTooltip(e, loc) {
+  const items = DB.inventory.filter(i => !i.sold && i.location === loc);
+  if (!items.length) return;
+  const tt = document.getElementById('tooltip');
+  if (!tt) return;
+  tt.innerHTML = items.map(i => `<div style="margin-bottom:4px;">
+    <span style="color:var(--accent)">${i.serial}</span><br>
+    ${i.type} -- <span style="color:var(--muted2)">${condLabel(i.condition)}</span>
+  </div>`).join('');
+  tt.style.display = 'block';
+  tt.style.left = (e.clientX + 14) + 'px';
+  tt.style.top  = (e.clientY - 10) + 'px';
+}
+function hideTip() { const tt = document.getElementById('tooltip'); if (tt) tt.style.display = 'none'; }
+
+// 
+// SIDEBAR LIST
+// 
+function renderSidebarList() {
+  const q  = (document.getElementById('sidebar-search')||{}).value?.toLowerCase()||'';
+  const ft = (document.getElementById('sf-type')||{}).value||'';
+  const items = DB.inventory.filter(i => !i.sold).filter(i => {
+    const m = !q
+      || i.serial.toLowerCase().includes(q)
+      || (i.model||'').toLowerCase().includes(q)
+      || i.type.toLowerCase().includes(q)
+      || i.location.toLowerCase().includes(q)
+      || (i.notes||'').toLowerCase().includes(q);
+    return m && (!ft || i.type===ft);
+  });
+
+  const el = document.getElementById('sidebar-list');
+  if (!el) return;
+  if (!items.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">[search]</div>No matching items</div>';
+    return;
+  }
+  el.innerHTML = items.map(i => `
+    <div class="item-card${i.serial===selectedSerial?' selected':''}" onclick="openDetail('${i.serial}')">
+      <div class="ic-top">
+        <span class="ic-serial">${i.serial}</span>
+        <span class="ic-loc">${i.location}</span>
+      </div>
+      <div class="ic-meta">
+        <span class="badge badge-${i.condition}">${condLabel(i.condition)}</span>
+        ${i.type}${i.model?` . <span style="color:var(--muted2);font-size:10px;">${i.model}</span>`:''}
+        ${isStale(i.lastVerified)?'<span style="color:var(--red);font-size:10px;">! Unverified</span>':''}
+      </div>
+    </div>`).join('');
+}
+
+// 
+// TRANSFER SIDEBAR
+// 
+function toggleTransferSidebar() {
+  document.getElementById('transfer-sidebar').classList.toggle('open');
+}
+
+function renderTransferSidebar() {
+  const active = DB.transfers.filter(t => t.status === 'active');
+  document.getElementById('ts-count').textContent = active.length;
+  document.getElementById('transfer-badge').textContent = active.length;
+  document.getElementById('transfer-badge').style.display = active.length ? '' : 'none';
+
+  const el = document.getElementById('ts-list');
+  if (!active.length) {
+    el.innerHTML = '<div class="empty-state" style="padding:20px;"><div class="empty-icon">[refresh]</div>No active transfers</div>';
+    return;
+  }
+  const labels = {stock:'Store Stock', pickup:'Cust. Pickup', return:'Store Return', 'sold-removal':'Sold Removal'};
+  el.innerHTML = active.map(t => `<div class="ts-item" onclick="openTransferDetail('${t.id}')">
+    <div class="ts-serial">${t.serial}</div>
+    <div class="ts-reason">${labels[t.reason]||t.reason} . ${t.location}</div>
+    <div style="font-size:10px;color:var(--muted2);font-family:var(--mono);margin-top:3px;">${fmtDate(t.initiated)}</div>
+  </div>`).join('');
+}
+
+// 
+// INVENTORY TABLE
+// FIX: sold items show "Sold" badge, not transferStatus()
+// 
+function transferStatus(serial) {
+  const t = DB.transfers.find(t => t.serial===serial && t.status==='active');
+  if (!t) return '<span style="color:var(--green);font-size:11px;font-family:var(--mono);">In Stock</span>';
+  const colors = {stock:'var(--blue)', pickup:'var(--green)', return:'var(--cyan)'};
+  const labels = {stock:'Store Stock', pickup:'Cust. Pickup', return:'Store Return', 'sold-removal':'Sold Removal'};
+  return `<span style="color:${colors[t.reason]||'var(--purple)'};font-size:11px;font-family:var(--mono);"><-> ${labels[t.reason]||t.reason}</span>`;
+}
+
+function renderInventoryTable() {
+  const q        = (document.getElementById('inv-search')||{}).value?.toLowerCase()||'';
+  const ft       = (document.getElementById('inv-filter-type')||{}).value||'';
+  const showSold = (document.getElementById('inv-show-sold')||{}).checked||false;
+
+  let items = DB.inventory
+    .filter(i => showSold || !i.sold)
+    .filter(i => {
+      const m = !q
+        || i.serial.toLowerCase().includes(q)
+        || (i.model||'').toLowerCase().includes(q)
+        || i.type.toLowerCase().includes(q)
+        || i.location.toLowerCase().includes(q)
+        || (i.damage||'').toLowerCase().includes(q)
+        || (i.notes||'').toLowerCase().includes(q);
+      return m && (!ft || i.type===ft);
+    })
+    .sort((a,b) => {
+      const av = (a[invSort.key]||'').toString();
+      const bv = (b[invSort.key]||'').toString();
+      return invSort.asc ? av.localeCompare(bv) : bv.localeCompare(av);
+    });
+
+  const countEl = document.getElementById('inv-count');
+  if (countEl) countEl.textContent = `${items.length} item${items.length!==1?'s':''}`;
+
+  // Update sort arrows
+  ['serial','model','type','location','status','added'].forEach(k => {
+    const el = document.getElementById('sort-' + k);
+    if (!el) return;
+    el.textContent = invSort.key===k ? (invSort.asc ? '^' : 'v') : '';
+  });
+
+  const tbody = document.getElementById('inv-tbody');
+  if (!tbody) return;
+  if (!items.length) {
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state" style="padding:32px;">No items found</div></td></tr>`;
+    return;
+  }
+
+  const canMove     = session.perms.moveItems;
+  const canSell     = session.perms.markSold;
+  const canTransfer = session.perms.initiateTransfer;
+  const canEdit     = session.perms.editItems;
+
+  tbody.innerHTML = items.map(i => {
+    // FIX: sold items display Sold badge, never transferStatus
+    const statusCell = i.sold
+      ? '<span class="badge badge-sold">Sold</span>'
+      : transferStatus(i.serial);
+
+    return `<tr class="${i.serial===selectedSerial?'selected-row':''}" onclick="openDetail('${i.serial}')">
+      <td class="td-serial">${i.serial}</td>
+      <td style="color:var(--muted2);font-size:11px;">${i.model||'--'}</td>
+      <td>${i.type}</td>
+      <td class="td-loc">${i.location
+        ? i.location
+        : `<span style="color:var(--muted2);font-style:italic;font-family:var(--mono);font-size:11px;">-- Unplaced${i.sheetLocation ? ' ('+i.sheetLocation+')' : ''}</span>`
+      }</td>
+      <td style="color:var(--muted2);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;" title="${i.damage||''}">${i.damage||'--'}</td>
+      <td>${statusCell}</td>
+      <td style="color:var(--muted2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${i.notes||'--'}</td>
+      <td style="color:var(--muted2);">${fmtDate(i.added)}</td>
+      <td><div class="td-actions">
+        ${!i.sold&&canEdit     ?`<button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();openEditItemModal('${i.serial}')">Edit</button>`:''}
+        ${!i.sold&&canMove     ?`<button class="btn btn-sm btn-cyan"      onclick="event.stopPropagation();openMoveModal('${i.serial}')">Move</button>`:''}
+        ${!i.sold&&canSell     ?`<button class="btn btn-sm btn-danger"    onclick="event.stopPropagation();openSellModal('${i.serial}')">Sell</button>`:''}
+        ${!i.sold&&canTransfer ?`<button class="btn btn-sm btn-purple"    onclick="event.stopPropagation();openTransferModal('${i.serial}')">Transfer</button>`:''}
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function sortInv(key) {
+  if (invSort.key === key) invSort.asc = !invSort.asc;
+  else { invSort.key = key; invSort.asc = true; }
+  renderInventoryTable();
+}
+
+// 
+// TRANSFERS VIEW
+// 
+function renderTransfersView() {
+  const showCompleted = (document.getElementById('show-completed-transfers')||{}).checked;
+  const transfers = DB.transfers.filter(t => showCompleted || t.status==='active');
+  const el = document.getElementById('transfers-grid');
+  if (!el) return;
+  if (!transfers.length) {
+    el.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">[refresh]</div>No transfers yet</div>';
+    return;
+  }
+  const reasonColors = {stock:'reason-stock', pickup:'reason-pickup', return:'reason-return', 'sold-removal':'reason-sold-removal'};
+  const reasonLabels = {stock:'Store Stock',  pickup:'Customer Pickup', return:'Store Return', 'sold-removal':'Sold Removal'};
+  const canVerify = session.perms.verifyTransfer;
+  el.innerHTML = transfers.map(t => `<div class="transfer-card" onclick="openTransferDetail('${t.id}')">
+    <div class="tc-header">
+      <div class="tc-serial">${t.serial}</div>
+      <span class="tc-reason-badge ${reasonColors[t.reason]||'reason-stock'}">${reasonLabels[t.reason]||t.reason}</span>
+    </div>
+    <div class="tc-info">
+      <span>[pin] ${t.location}</span>
+      <span>[user] Initiated by ${t.initiatedBy}</span>
+      <span>[date] ${fmtDate(t.initiated)}</span>
+      ${t.status!=='active'?`<span style="color:${t.status==='completed'?'var(--green)':'var(--red)'};">v ${t.status.charAt(0).toUpperCase()+t.status.slice(1)} by ${t.verifiedBy}</span>`:''}
+    </div>
+    ${t.status==='active'&&canVerify?`<div class="tc-actions" onclick="event.stopPropagation()">
+      <button class="btn btn-sm btn-green"  onclick="verifyTransfer('${t.id}','completed')">v Complete</button>
+      <button class="btn btn-sm btn-danger" onclick="verifyTransfer('${t.id}','cancelled')">x Cancel</button>
+    </div>`:''}
+  </div>`).join('');
+}
+
+function openTransferDetail(id) {
+  const t = DB.transfers.find(x => x.id===id);
+  if (!t) return;
+  const item = DB.inventory.find(i => i.serial===t.serial);
+  const reasonLabels = {stock:'Store Stock', pickup:'Customer Pickup', return:'Store Return', 'sold-removal':'Sold Removal'};
+  document.getElementById('tmd-title').textContent = `Transfer -- ${t.serial}`;
+  document.getElementById('tmd-sub').textContent = reasonLabels[t.reason]||t.reason;
+
+  const rows = [
+    ['Serial',       t.serial],
+    ['Type',         item ? item.type : '--'],
+    ['Condition',    item ? condLabel(item.condition) : '--'],
+    ['Location',     t.location],
+    ['Reason',       reasonLabels[t.reason]||t.reason],
+    ['Notes',        t.notes||'--'],
+    ['Initiated By', t.initiatedBy],
+    ['Initiated',    fmtDate(t.initiated)],
+    ['Status',       t.status.charAt(0).toUpperCase()+t.status.slice(1)]
+  ];
+  if (t.verifiedBy) {
+    rows.push(['Verified By', t.verifiedBy], ['Verified', fmtDate(t.verified)]);
+  }
+
+  document.getElementById('tmd-body').innerHTML = rows.map(([k,v]) =>
+    `<div class="dp-row"><span class="dp-key">${k}</span><span class="dp-val">${v}</span></div>`
+  ).join('');
+
+  const canVerify = session.perms.verifyTransfer;
+  // FIX: no inline .find() in template  use id variable directly
+  document.getElementById('tmd-footer').innerHTML = `
+    ${t.status==='active'&&canVerify
+      ? `<button class="btn btn-green"  onclick="verifyTransfer('${t.id}','completed');closeModal('modal-transfer-detail')">v Complete</button>
+         <button class="btn btn-danger" onclick="verifyTransfer('${t.id}','cancelled');closeModal('modal-transfer-detail')">x Cancel</button>`
+      : ''}
+    <button class="btn btn-secondary" onclick="closeModal('modal-transfer-detail')">Close</button>
+  `;
+
+  if (item && !item.sold) { selectedSerial = t.serial; renderGrid(); }
+  openModal('modal-transfer-detail');
+}
+
+function verifyTransfer(id, status) {
+  if (!session.perms.verifyTransfer) return showToast('No permission', 'error');
+  const t = DB.transfers.find(x => x.id===id);
+  if (!t) return;
+  t.status = status;
+  t.verifiedBy = session.username;
+  t.verified = now();
+  // Remove from floor map when outbound transfers complete
+  if (status === 'completed' && ['stock','pickup','sold-removal'].includes(t.reason)) {
+    const item = DB.inventory.find(i => i.serial===t.serial);
+    if (item) { item.floorRemoved = true; }
+  }
+  addLog(session.username, status==='completed'?'TRANSFER_COMPLETE':'TRANSFER_CANCEL',
+    `Transfer ${status} for ${t.serial}`, t.serial);
+  saveDB();
+  renderAll();
+  showToast(`Transfer ${status}`, status==='completed'?'success':'info');
+}
+
+// 
+// DETAIL PANEL
+// FIX: transfer verify button safely references transfer id
+// 
+function openDetail(serial) {
+  const item = DB.inventory.find(i => i.serial===serial);
+  if (!item) return;
+  selectedSerial = serial;
+  document.getElementById('dp-serial').textContent = item.serial;
+  document.getElementById('dp-type').textContent = item.type;
+
+  // FIX: find transfer first, reference by id in buttons
+  const transfer = DB.transfers.find(t => t.serial===serial && t.status==='active');
+
+  const rows = [
+    ['Location',      `<span style="color:var(--cyan)">${item.location}</span>`],
+    ['Model #',       item.model||'--'],
+    ['Condition',     item.damage ? `<span style="color:var(--muted2);font-size:11px;">${item.damage}</span>` : '--'],
+    ['Status',        item.sold
+                        ? '<span class="badge badge-sold">Sold</span>'
+                        : transfer
+                          ? `<span style="color:var(--purple)"><-> Transfer Active (${({stock:'Store Stock',pickup:'Cust. Pickup',return:'Store Return','sold-removal':'Sold Removal'})[transfer.reason]||transfer.reason})</span>`
+                          : '<span style="color:var(--green)">In Stock</span>'],
+    ['Notes',         item.notes||'--'],
+    ['Added',         fmtDate(item.added)],
+    ['Last Verified', fmtDate(item.lastVerified) + (isStale(item.lastVerified)?' <span style="color:var(--red)">! Stale</span>':'')]
+  ];
+  document.getElementById('dp-body').innerHTML = rows.map(([k,v]) =>
+    `<div class="dp-row"><span class="dp-key">${k}</span><span class="dp-val">${v}</span></div>`
+  ).join('');
+
+  const canMove     = session.perms.moveItems;
+  const canSell     = session.perms.markSold;
+  const canTransfer = session.perms.initiateTransfer;
+  const canVerify   = session.perms.verifyTransfer;
+  const canLog      = session.perms.viewLogs;
+  const canEdit     = session.perms.editItems;
+
+  let actions = '';
+  if (!item.sold) {
+    if (canEdit)     actions += `<button class="btn btn-secondary w-full" onclick="openEditItemModal('${serial}')">e Edit Details</button>`;
+    if (canMove)     actions += `<button class="btn btn-cyan w-full" onclick="openMoveModal('${serial}')"><-> Move Item</button>`;
+    if (session.perms.markVerified) actions += `<button class="btn btn-primary w-full" onclick="verifyItem('${serial}')">v Mark Verified</button>`;
+    // FIX: check no active transfer before showing initiate button
+    if (canTransfer && !transfer) actions += `<button class="btn btn-purple w-full" onclick="openTransferModal('${serial}')"><-> Transfer to Store</button>`;
+    // FIX: safe reference using transfer.id (already resolved above)
+    if (canVerify && transfer) actions += `<button class="btn btn-green w-full" onclick="verifyTransfer('${transfer.id}','completed');closeDetail()">v Complete Transfer</button>`;
+    if (canSell)   actions += `<button class="btn btn-danger w-full" onclick="openSellModal('${serial}')">Mark as Sold</button>`;
+  }
+  if (canLog) actions += `<button class="btn btn-secondary w-full" onclick="openActivityLog('${serial}')">[log] Activity Log</button>`;
+  document.getElementById('dp-actions').innerHTML = actions;
+
+  document.getElementById('detail-panel').classList.add('open');
+  renderGrid();
+  renderSidebarList();
+}
+
+function closeDetail() {
+  selectedSerial = null;
+  document.getElementById('detail-panel').classList.remove('open');
+  renderGrid();
+  renderSidebarList();
+}
+
+function verifyItem(serial) {
+  if (!session.perms.markVerified) return showToast('No permission', 'error');
+  const item = DB.inventory.find(i => i.serial===serial);
+  if (!item) return;
+  item.lastVerified = now();
+  addLog(session.username, 'VERIFY', `Verified location of ${serial} at ${item.location}`, serial);
+  saveDB();
+  openDetail(serial);
+  showToast(`${serial} verified`, 'success');
+}
+
+// 
+// EDIT ITEM MODAL (FIX: new, was missing)
+// 
+function openEditItemModal(serial) {
+  if (!session.perms.editItems) return showToast('No permission', 'error');
+  const item = DB.inventory.find(i => i.serial===serial);
+  if (!item) return;
+  pendingEditSerial = serial;
+  document.getElementById('edit-item-label').textContent = `Editing: ${serial}`;
+  document.getElementById('edit-serial').value = item.serial;
+  document.getElementById('edit-model').value  = item.model || '';
+  document.getElementById('edit-type').value   = item.type  || '';
+  document.getElementById('edit-damage').value = item.damage || '';
+  document.getElementById('edit-notes').value  = item.notes  || '';
+  openModal('modal-edit-item');
+}
+
+function confirmEditItem() {
+  const item = DB.inventory.find(i => i.serial===pendingEditSerial);
+  if (!item) return;
+  const model  = document.getElementById('edit-model').value.trim().toUpperCase();
+  const type   = document.getElementById('edit-type').value;
+  const damage = document.getElementById('edit-damage').value.trim();
+  const notes  = document.getElementById('edit-notes').value.trim();
+  if (!type) return showToast('Select appliance type', 'error');
+
+  const changes = [];
+  if (model  !== item.model)          changes.push(`Model: ${item.model||'--'} -> ${model||'--'}`);
+  if (type   !== item.type)           changes.push(`Type: ${item.type} -> ${type}`);
+  if (damage !== (item.damage||''))   changes.push('Condition notes updated');
+  if (notes  !== (item.notes||''))    changes.push('Notes updated');
+
+  item.model  = model;
+  item.type   = type;
+  item.damage = damage;
+  item.notes  = notes;
+
+  if (changes.length) {
+    addLog(session.username, 'EDIT', `Edited ${item.serial}: ${changes.join('; ')}`, item.serial);
+  }
+  saveDB();
+  sheetsPush('updateItem', { serial: item.serial, model: item.model||'', location: item.location, sale: item.notes||'', description: item.damage||'' });
+  closeModal('modal-edit-item');
+  if (selectedSerial === pendingEditSerial) openDetail(pendingEditSerial);
+  renderAll();
+  showToast(`${item.serial} updated`, 'success');
+}
+
+// 
+// MODALS
+// 
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function openMoveModal(serial) {
+  if (!session.perms.moveItems) return showToast('No permission', 'error');
+  pendingMoveSerial = serial;
+  document.getElementById('move-item-label').textContent = `Moving: ${serial}`;
+  const item = DB.inventory.find(i => i.serial===serial);
+  locComboSet('move-loc-select', item ? item.location : '');
+  openModal('modal-move');
+}
+
+function confirmMove() {
+  const loc = locComboGet('move-loc-select');
+  if (!loc) return showToast('Select a location', 'error');
+  const item = DB.inventory.find(i => i.serial===pendingMoveSerial);
+  if (!item) return;
+  if (loc === item.location) { closeModal('modal-move'); return; }
+  const oldLoc = item.location;
+  item.location = loc;
+  item.lastVerified = now();
+  addLog(session.username, 'MOVE', `Moved ${item.serial} from ${oldLoc} -> ${loc}`, item.serial);
+  saveDB();
+  sheetsPush('moveItem', { serial: item.serial, location: loc });
+  closeModal('modal-move');
+  if (selectedSerial === pendingMoveSerial) openDetail(pendingMoveSerial);
+  renderAll();
+  showToast(`Moved to ${loc}`, 'success');
+}
+
+function openTransferModal(serial) {
+  if (!session.perms.initiateTransfer) return showToast('No permission', 'error');
+  // FIX: prevent duplicate active transfer on the same item
+  const existingTransfer = DB.transfers.find(t => t.serial===serial && t.status==='active');
+  if (existingTransfer) return showToast('This item already has an active transfer', 'error');
+  pendingTransferSerial = serial;
+  document.getElementById('transfer-item-label').textContent = `Item: ${serial}`;
+  document.getElementById('transfer-reason').value = '';
+  document.getElementById('transfer-notes').value  = '';
+  openModal('modal-transfer');
+}
+
+function confirmTransfer() {
+  const reason = document.getElementById('transfer-reason').value;
+  const notes  = document.getElementById('transfer-notes').value.trim();
+  if (!reason) return showToast('Select a reason', 'error');
+  const item = DB.inventory.find(i => i.serial===pendingTransferSerial);
+  if (!item) return;
+  const t = {
+    id: uid(), serial: item.serial, location: item.location,
+    reason, notes, initiatedBy: session.username, initiated: now(),
+    status: 'active', verifiedBy: null, verified: null
+  };
+  DB.transfers.push(t);
+  const reasonLabels = {stock:'Store Stock', pickup:'Customer Pickup', return:'Store Return', 'sold-removal':'Sold Removal'};
+  addLog(session.username, 'TRANSFER_INIT', `Transfer initiated: ${item.serial} -- ${reasonLabels[reason]}`, item.serial);
+  saveDB();
+  closeModal('modal-transfer');
+  renderAll();
+  showToast(`Transfer initiated for ${item.serial}`, 'success');
+}
+
+function openSellModal(serial) {
+  if (!session.perms.markSold) return showToast('No permission', 'error');
+  pendingSellSerial = serial;
+  document.getElementById('sell-item-label').textContent = `Item: ${serial}`;
+  openModal('modal-sell');
+}
+
+function confirmSell() {
+  const item = DB.inventory.find(i => i.serial===pendingSellSerial);
+  if (!item) return;
+  item.sold        = true;
+  item.soldAt      = now();
+  item.floorRemoved = false; // stays on map until transferred out
+  addLog(session.username, 'SELL', `Marked ${item.serial} as sold -- remains on floor map`, item.serial);
+  saveDB();
+  sheetsPush('markSold', { serial: item.serial });
+  closeModal('modal-sell');
+  renderAll();
+  showToast(`${item.serial} marked sold -- still showing on map`, 'success');
+}
+
+function openActivityLog(serial) {
+  const logs = DB.log.filter(l => l.serial===serial).sort((a,b) => b.ts.localeCompare(a.ts));
+  document.getElementById('log-item-label').textContent = `Serial: ${serial}`;
+  const body = document.getElementById('activity-log-body');
+  if (!logs.length) {
+    body.innerHTML = '<div class="empty-state"><div class="empty-icon">[log]</div>No activity yet</div>';
+  } else {
+    const typeClass = {
+      ADD:'log-add', MOVE:'log-move', SELL:'log-sell',
+      TRANSFER_INIT:'log-transfer', TRANSFER_COMPLETE:'log-transfer', TRANSFER_CANCEL:'log-transfer',
+      VERIFY:'log-verify', EDIT:'log-edit'
+    };
+    body.innerHTML = logs.map(l => `<div class="log-entry ${typeClass[l.action]||''}">
+      <div class="log-action">${l.action.replace(/_/g,' ')}</div>
+      <div>By <span class="log-user">${l.user}</span></div>
+      <div class="log-detail">${l.detail}</div>
+      <div class="log-time">${fmtDateTime(l.ts)}</div>
+    </div>`).join('');
+  }
+  openModal('modal-activitylog');
+}
+
+// 
+// ADMIN  USERS
+// 
+function renderAdminUsers() {
+  const el = document.getElementById('users-list');
+  if (!DB.users.length) { el.innerHTML='<div class="empty-state">No users</div>'; return; }
+  el.innerHTML = DB.users.map(u => {
+    const role = DB.roles.find(r => r.id===u.roleId) || { name: u.roleId, color: '#888' };
+    return `<div class="user-row">
+      <div class="user-avatar-sm" style="background:${role.color};color:#0c0e14;">${u.username[0].toUpperCase()}</div>
+      <div class="user-info">
+        <div class="user-username">${u.username} ${u.username===session.username?'<span style="font-size:10px;color:var(--muted2);font-family:var(--mono);">(you)</span>':''}</div>
+        <div class="user-email"><span class="badge-role" style="background:${role.color}22;color:${role.color};">${role.name}</span></div>
+      </div>
+      <div class="user-status ${u.locked?'status-locked':'status-active'}">${u.locked?'[lock] Locked':'o Active'}</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;">
+        ${u.locked ? `<button class="btn btn-sm btn-green" onclick="unlockUser('${u.username}')">Unlock</button>` : ''}
+        ${u.username!==session.username ? `
+          <button class="btn btn-sm btn-secondary" onclick="openChangeRoleModal('${u.username}')">Role</button>
+          <button class="btn btn-sm btn-danger"    onclick="deleteUser('${u.username}')">Remove</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openAddUserModal() {
+  document.getElementById('new-user-username').value = '';
+  document.getElementById('new-user-pw').value = '';
+  const sel = document.getElementById('new-user-role');
+  sel.innerHTML = DB.roles.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+  openModal('modal-add-user');
+}
+
+async function confirmAddUser() {
+  const username = document.getElementById('new-user-username').value.trim();
+  const pw     = document.getElementById('new-user-pw').value;
+  const roleId = document.getElementById('new-user-role').value;
+  if (!username) return showToast('Username required', 'error');
+  if (pw.length < 8) return showToast('Password must be 8+ characters', 'error');
+  if (DB.users.find(u => u.username===username)) return showToast('Username taken', 'error');
+  const hash = await hashPw(pw);
+  DB.users.push({ username, passwordHash: hash, roleId, locked: false, failedAttempts: 0, firstLogin: true, created: now() });
+  addLog(session.username, 'USER_CREATE', `Created user: ${username} (${roleId})`);
+  saveDB();
+  closeModal('modal-add-user');
+  renderAdminUsers();
+  showToast(`User ${username} created`, 'success');
+}
+
+function unlockUser(username) {
+  const u = DB.users.find(x => x.username===username);
+  if (!u) return;
+  u.locked = false;
+  u.failedAttempts = 0;
+  addLog(session.username, 'USER_UNLOCK', `Unlocked account: ${username}`);
+  saveDB();
+  renderAdminUsers();
+  showToast(`${username} unlocked`, 'success');
+}
+
+// FIX: changeUserRole replaced with modal-based flow
+function openChangeRoleModal(username) {
+  const u = DB.users.find(x => x.username===username);
+  if (!u) return;
+  pendingChangeRoleUsername = username;
+  pendingSelectedRoleId = u.roleId;
+  document.getElementById('change-role-username-label').textContent = `Changing role for: ${username}`;
+  const container = document.getElementById('change-role-options');
+  container.innerHTML = DB.roles.map(r => `
+    <div class="role-option ${r.id===u.roleId?'selected':''}" id="role-opt-${r.id}" onclick="selectPendingRole('${r.id}')">
+      <div style="width:10px;height:10px;border-radius:50%;background:${r.color};flex-shrink:0;"></div>
+      <div style="flex:1;">
+        <div style="font-weight:600;font-size:13px;">${r.name}</div>
+        <div style="font-size:10px;color:var(--muted2);font-family:var(--mono);">${DB.users.filter(u=>u.roleId===r.id).length} users</div>
+      </div>
+      <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;" id="role-radio-${r.id}">
+        ${r.id===u.roleId?'<div style="width:8px;height:8px;border-radius:50%;background:var(--accent);"></div>':''}
+      </div>
+    </div>`).join('');
+  openModal('modal-change-role');
+}
+
+function selectPendingRole(roleId) {
+  pendingSelectedRoleId = roleId;
+  document.querySelectorAll('.role-option').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('[id^="role-radio-"]').forEach(el => el.innerHTML = '');
+  const opt = document.getElementById('role-opt-' + roleId);
+  if (opt) opt.classList.add('selected');
+  const radio = document.getElementById('role-radio-' + roleId);
+  if (radio) radio.innerHTML = '<div style="width:8px;height:8px;border-radius:50%;background:var(--accent);"></div>';
+}
+
+function confirmChangeRole() {
+  if (!pendingChangeRoleUsername || !pendingSelectedRoleId) return;
+  const u = DB.users.find(x => x.username===pendingChangeRoleUsername);
+  const role = DB.roles.find(r => r.id===pendingSelectedRoleId);
+  if (!u || !role) return;
+  const oldRole = u.roleId;
+  if (oldRole === pendingSelectedRoleId) { closeModal('modal-change-role'); return; }
+  u.roleId = role.id;
+  addLog(session.username, 'USER_ROLE', `Changed ${pendingChangeRoleUsername} role: ${oldRole} -> ${role.id}`);
+  saveDB();
+  closeModal('modal-change-role');
+  renderAdminUsers();
+  showToast(`${pendingChangeRoleUsername} is now ${role.name}`, 'success');
+}
+
+function deleteUser(username) {
+  if (!confirm(`Remove user "${username}"? This cannot be undone.`)) return;
+  DB.users = DB.users.filter(u => u.username!==username);
+  addLog(session.username, 'USER_DELETE', `Deleted user: ${username}`);
+  saveDB();
+  renderAdminUsers();
+  showToast(`${username} removed`, 'success');
+}
+
+// 
+// ADMIN  ROLES
+// 
+function renderAdminRoles() {
+  const el = document.getElementById('roles-list');
+  el.innerHTML = DB.roles.map(r => `
+    <div class="role-row${r.id===selectedRoleId?' selected':''}" onclick="selectRole('${r.id}')">
+      <div class="role-color-dot" style="background:${r.color};"></div>
+      <div class="role-name">${r.name}</div>
+      <div class="role-member-count">${DB.users.filter(u => u.roleId===r.id).length}</div>
+      ${r.locked?'<span style="font-size:9px;color:var(--muted);font-family:var(--mono);">SYS</span>':''}
+    </div>`).join('');
+}
+
+function selectRole(id) {
+  selectedRoleId = id;
+  renderAdminRoles();
+  renderRoleEditor();
+}
+
+function renderRoleEditor() {
+  const role = DB.roles.find(r => r.id===selectedRoleId);
+  if (!role) return;
+  const card = document.getElementById('role-editor-card');
+  let html = `<div class="card-title">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:14px;height:14px;border-radius:50%;background:${role.color};"></div>
+      ${role.name}
+    </div>
+    ${!role.locked
+      ? `<button class="btn btn-sm btn-danger" onclick="deleteRole('${role.id}')">Delete</button>`
+      : '<span style="font-size:10px;color:var(--muted);font-family:var(--mono);">DEFAULT ROLE</span>'}
+  </div>`;
+
+  if (!role.locked) {
+    html += `<div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:16px;align-items:center;">
+      <input type="text" value="${role.name}" id="re-name" placeholder="Role name" style="font-size:13px;" />
+      <input type="color" value="${role.color}" id="re-color" style="height:36px;width:50px;" onchange="updateRoleColor('${role.id}',this.value)" />
+    </div>`;
+  }
+
+  PERM_DEFS.forEach(section => {
+    html += `<div class="perm-section"><div class="perm-section-title">${section.section}</div>`;
+    section.perms.forEach(p => {
+      const checked   = role.perms[p.key] || false;
+      const disabled  = role.locked ? 'disabled' : '';
+      html += `<div class="toggle-wrap">
+        <div class="toggle-info"><div class="t-name">${p.name}</div><div class="t-desc">${p.desc}</div></div>
+        <label class="toggle"><input type="checkbox" ${checked?'checked':''} ${disabled} onchange="togglePerm('${role.id}','${p.key}',this.checked)"><span class="toggle-slider"></span></label>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  if (!role.locked) {
+    html += `<div style="margin-top:12px;"><button class="btn btn-primary" onclick="saveRoleName('${role.id}')">Save Changes</button></div>`;
+  }
+  card.innerHTML = html;
+}
+
+function togglePerm(roleId, key, val) {
+  const role = DB.roles.find(r => r.id===roleId);
+  if (!role || role.locked) return;
+  role.perms[key] = val;
+  saveDB();
+}
+function updateRoleColor(roleId, color) {
+  const role = DB.roles.find(r => r.id===roleId);
+  if (!role || role.locked) return;
+  role.color = color;
+  saveDB();
+  renderAdminRoles();
+}
+function saveRoleName(roleId) {
+  const role = DB.roles.find(r => r.id===roleId);
+  if (!role) return;
+  const name = document.getElementById('re-name').value.trim();
+  if (!name) return showToast('Name required', 'error');
+  role.name = name;
+  saveDB();
+  renderAdminRoles();
+  showToast('Role saved', 'success');
+}
+function openNewRoleModal() {
+  document.getElementById('new-role-name').value = '';
+  openModal('modal-new-role');
+}
+function confirmNewRole() {
+  const name  = document.getElementById('new-role-name').value.trim();
+  const color = document.getElementById('new-role-color').value;
+  if (!name) return showToast('Name required', 'error');
+  const id = 'role-' + Date.now();
+  DB.roles.push({ id, name, color, locked: false, perms: salesPerms() });
+  addLog(session.username, 'ROLE_CREATE', `Created role: ${name}`);
+  saveDB();
+  closeModal('modal-new-role');
+  renderAdminRoles();
+  showToast(`Role "${name}" created`, 'success');
+  selectRole(id);
+}
+function deleteRole(id) {
+  const usersWithRole = DB.users.filter(u => u.roleId===id).length;
+  if (usersWithRole > 0) return showToast(`Cannot delete -- ${usersWithRole} user(s) have this role`, 'error');
+  if (!confirm('Delete this role?')) return;
+  DB.roles = DB.roles.filter(r => r.id!==id);
+  saveDB();
+  selectedRoleId = null;
+  renderAdminRoles();
+  document.getElementById('role-editor-card').innerHTML = '<div class="empty-state"><div class="empty-icon">[medal]</div>Select a role to edit</div>';
+  showToast('Role deleted', 'success');
+}
+
+// 
+// LAYOUT EDITOR
+// 
+let leActiveCell = null;
+let leSelection  = new Set();
+let leDragging   = false;
+let leDragAnchor = null;
+let leCellW      = 48;
+let leCellH      = 48;
+const LE_GAP     = 2;
+
+function initLayout() {
+  // Ensure layouts array exists
+  if (!DB.layouts || !DB.layouts.length) getActiveLayout();
+  const layout = getActiveLayout();
+  if (!layout.canvas)     layout.canvas = [];
+  if (!layout.canvasRows) layout.canvasRows = 12;
+  if (!layout.canvasCols) layout.canvasCols = 20;
+  if (!layout.cellW)      layout.cellW = 48;
+  if (!layout.cellH)      layout.cellH = 48;
+  // Keep DB.layout alias pointing at active plan
+  DB.layout = layout;
+  leCellW = layout.cellW;
+  leCellH = layout.cellH;
+}
+
+function renderLayoutEditor() {
+  initLayout();
+  const wEl = document.getElementById('le-cell-w');
+  const hEl = document.getElementById('le-cell-h');
+  if (wEl) wEl.value = leCellW;
+  if (hEl) hEl.value = leCellH;
+  const rowsEl = document.getElementById('le-grid-rows');
+  const colsEl = document.getElementById('le-grid-cols');
+  if (rowsEl) rowsEl.value = DB.layout.canvasRows || 12;
+  if (colsEl) colsEl.value = DB.layout.canvasCols || 20;
+  renderLeCanvas();
+  leUpdateToolbar();
+  leUpdateRemoveBtns();
+}
+
+function initCanvas() {
+  const rows = parseInt(document.getElementById('le-grid-rows').value)||12;
+  const cols = parseInt(document.getElementById('le-grid-cols').value)||20;
+  DB.layout.canvas     = [];
+  DB.layout.canvasRows = rows;
+  DB.layout.canvasCols = cols;
+  leActiveCell = null;
+  leSelection.clear();
+  saveDB(); renderLeCanvas(); leUpdateStatus(); renderGrid(); populateLocInputs(); leUpdateRemoveBtns();
+  showToast(`Canvas ${rows}x${cols} created`, 'success');
+}
+
+function clearCanvas() {
+  if (!confirm('Clear all cells?')) return;
+  DB.layout.canvas = [];
+  leActiveCell = null;
+  leSelection.clear();
+  saveDB(); renderLeCanvas(); leUpdateStatus(); renderGrid(); populateLocInputs();
+  showToast('Canvas cleared', 'info');
+}
+
+//  Grid resize helpers 
+
+function leGetOccupiedCells() {
+  // Returns a Set of "r,c" keys for cells that have items assigned to them
+  const validLocs = new Set();
+  (DB.layout.canvas || []).forEach(cell => {
+    if (cell.type === 'rack' && cell.rowName && cell.col)
+      validLocs.add(`${cell.rowName}-${cell.col}`);
+  });
+  const occupiedCells = new Set();
+  DB.inventory.filter(i => !i.sold && i.location).forEach(item => {
+    if (validLocs.has(item.location)) {
+      // Find the grid cell for this location
+      (DB.layout.canvas || []).forEach(cell => {
+        if (cell.type === 'rack' && `${cell.rowName}-${cell.col}` === item.location)
+          occupiedCells.add(`${cell.r},${cell.c}`);
+      });
+    }
+  });
+  return occupiedCells;
+}
+
+function leAddRow() {
+  DB.layout.canvasRows = (DB.layout.canvasRows || 12) + 1;
+  const rowsEl = document.getElementById('le-grid-rows');
+  if (rowsEl) rowsEl.value = DB.layout.canvasRows;
+  saveDB(); renderLeCanvas(); leUpdateRemoveBtns();
+  showToast(`Grid expanded to ${DB.layout.canvasRows} rows`, 'success');
+}
+
+function leAddCol() {
+  DB.layout.canvasCols = (DB.layout.canvasCols || 20) + 1;
+  const colsEl = document.getElementById('le-grid-cols');
+  if (colsEl) colsEl.value = DB.layout.canvasCols;
+  saveDB(); renderLeCanvas(); leUpdateRemoveBtns();
+  showToast(`Grid expanded to ${DB.layout.canvasCols} columns`, 'success');
+}
+
+function leRemoveRow() {
+  const rows = DB.layout.canvasRows || 12;
+  if (rows <= 2) return showToast('Minimum 2 rows', 'error');
+  const lastRow = rows - 1;
+  const occupied = leGetOccupiedCells();
+  const blocked = (DB.layout.canvas || []).some(cell => cell.r === lastRow && occupied.has(`${cell.r},${cell.c}`));
+  if (blocked) return showToast('Last row has items -- move them before shrinking', 'error');
+  // Remove all cells in the last row
+  DB.layout.canvas = (DB.layout.canvas || []).filter(cell => cell.r !== lastRow);
+  DB.layout.canvasRows = lastRow;
+  const rowsEl = document.getElementById('le-grid-rows');
+  if (rowsEl) rowsEl.value = DB.layout.canvasRows;
+  saveDB(); renderLeCanvas(); renderGrid(); populateLocInputs(); leUpdateRemoveBtns();
+  showToast(`Grid shrunk to ${DB.layout.canvasRows} rows`, 'info');
+}
+
+function leRemoveCol() {
+  const cols = DB.layout.canvasCols || 20;
+  if (cols <= 2) return showToast('Minimum 2 columns', 'error');
+  const lastCol = cols - 1;
+  const occupied = leGetOccupiedCells();
+  const blocked = (DB.layout.canvas || []).some(cell => cell.c === lastCol && occupied.has(`${cell.r},${cell.c}`));
+  if (blocked) return showToast('Last column has items -- move them before shrinking', 'error');
+  DB.layout.canvas = (DB.layout.canvas || []).filter(cell => cell.c !== lastCol);
+  DB.layout.canvasCols = lastCol;
+  const colsEl = document.getElementById('le-grid-cols');
+  if (colsEl) colsEl.value = DB.layout.canvasCols;
+  saveDB(); renderLeCanvas(); renderGrid(); populateLocInputs(); leUpdateRemoveBtns();
+  showToast(`Grid shrunk to ${DB.layout.canvasCols} columns`, 'info');
+}
+
+function leUpdateRemoveBtns() {
+  // Disable  buttons when at minimums
+  const rowBtn = document.getElementById('le-remove-row-btn');
+  const colBtn = document.getElementById('le-remove-col-btn');
+  if (rowBtn) rowBtn.disabled = (DB.layout.canvasRows || 12) <= 2;
+  if (colBtn) colBtn.disabled = (DB.layout.canvasCols || 20) <= 2;
+}
+
+function leUpdateCellSize() {
+  leCellW = parseInt(document.getElementById('le-cell-w').value)||48;
+  leCellH = parseInt(document.getElementById('le-cell-h').value)||48;
+  DB.layout.cellW = leCellW;
+  DB.layout.cellH = leCellH;
+  saveDB(); renderLeCanvas();
+  // FIX: also update the floor map when cell size changes
+  renderGrid();
+}
+
+function renderLeCanvas() {
+  const wrap = document.getElementById('le-canvas-wrap');
+  if (!wrap) return;
+
+  const rows = DB.layout.canvasRows || 12;
+  const cols = DB.layout.canvasCols || 20;
+  const W = leCellW, H = leCellH, G = LE_GAP;
+  const LL = 64, RL = 64, HEADER = 22;
+
+  const cellMap = {};
+  (DB.layout.canvas||[]).forEach(cell => { cellMap[`${cell.r},${cell.c}`] = cell; });
+
+  const rowNameByGridRow = {};
+  (DB.layout.canvas||[]).forEach(cell => {
+    if (cell.type !== 'rack' || !cell.rowName) return;
+    const side = cell.labelSide || 'left';
+    if (!rowNameByGridRow[cell.r]) rowNameByGridRow[cell.r] = {};
+    const isFirst = !Object.values(cellMap).some(cc => cc.r===cell.r && cc.c<cell.c && cc.type==='rack' && cc.rowName===cell.rowName);
+    const isLast  = !Object.values(cellMap).some(cc => cc.r===cell.r && cc.c>cell.c && cc.type==='rack' && cc.rowName===cell.rowName);
+    if (isFirst && (side==='left'||side==='both'))  rowNameByGridRow[cell.r].left  = cell.rowName;
+    if (isLast  && (side==='right'||side==='both')) rowNameByGridRow[cell.r].right = cell.rowName;
+  });
+
+  const totalW = LL + cols*(W+G) - G + RL;
+  const totalH = HEADER + rows*(H+G) - G + 4;
+
+  let html = `<div style="position:relative;width:${totalW}px;height:${totalH}px;outline:none;"
+    onmouseleave="leDragEnd(event)" oncontextmenu="event.preventDefault();">`;
+
+  for (let c = 0; c < cols; c++) {
+    const left = LL + c*(W+G);
+    html += `<div style="position:absolute;top:0;left:${left}px;width:${W}px;height:${HEADER-2}px;
+      display:flex;align-items:center;justify-content:center;
+      font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.5px;">${c+1}</div>`;
+  }
+
+  for (let r = 0; r < rows; r++) {
+    const top = HEADER + r*(H+G);
+    const leftLabelText  = rowNameByGridRow[r]?.left;
+    const rightLabelText = rowNameByGridRow[r]?.right;
+
+    if (leftLabelText) {
+      html += `<div style="position:absolute;top:${top}px;left:0;width:${LL-4}px;height:${H}px;
+        display:flex;align-items:center;justify-content:flex-end;padding-right:8px;
+        font-family:var(--mono);font-size:${Math.min(13,Math.max(9,H*0.25))}px;font-weight:800;
+        color:var(--accent);white-space:nowrap;overflow:hidden;">${leftLabelText}</div>`;
+    } else {
+      html += `<div style="position:absolute;top:${top}px;left:0;width:${LL-4}px;height:${H}px;
+        display:flex;align-items:center;justify-content:flex-end;padding-right:8px;
+        font-family:var(--mono);font-size:9px;color:var(--border2);">${r+1}</div>`;
+    }
+    if (rightLabelText) {
+      html += `<div style="position:absolute;top:${top}px;left:${LL+cols*(W+G)+G}px;width:${RL-4}px;height:${H}px;
+        display:flex;align-items:center;padding-left:8px;
+        font-family:var(--mono);font-size:${Math.min(13,Math.max(9,H*0.25))}px;font-weight:800;
+        color:var(--accent);white-space:nowrap;overflow:hidden;">${rightLabelText}</div>`;
+    }
+
+    for (let c = 0; c < cols; c++) {
+      const left = LL + c*(W+G);
+      const key  = `${r},${c}`;
+      const cell = cellMap[key] || null;
+      const type = cell ? cell.type : 'empty';
+      const isActive = leActiveCell === key;
+      const isSel    = leSelection.has(key);
+
+      let bg = 'var(--surface2)', borderStyle = `1px solid var(--border)`;
+      let textColor = 'var(--muted)', fontSize = Math.max(10, Math.min(15, W*0.3))+'px';
+      let fontW = '400', cellText = '', extraStyle = '';
+
+      if (type === 'aisle') {
+        bg = 'var(--bg)'; borderStyle = `1px dashed var(--border2)`;
+        cellText = '<span style="font-size:8px;letter-spacing:1px;color:var(--border2);">AISLE</span>';
+      } else if (type === 'rack') {
+        bg = 'rgba(240,165,0,0.08)'; borderStyle = `1px solid rgba(240,165,0,0.3)`;
+        textColor = 'var(--accent)'; fontW = '700';
+        cellText = cell.col || '<span style="font-size:8px;color:var(--border2);">--</span>';
+        const below = cellMap[`${r+1},${c}`];
+        const above = cellMap[`${r-1},${c}`];
+        const hasBackBelow  = below && below.type==='rack' && below.rowName===cell.rowName && below.face==='bottom' && cell.face==='top';
+        const hasFrontAbove = above && above.type==='rack' && above.rowName===cell.rowName && above.face==='top'  && cell.face==='bottom';
+        if (hasBackBelow)  extraStyle = `border-bottom:2px solid var(--border2);border-radius:3px 3px 0 0;`;
+        if (hasFrontAbove) extraStyle = `border-top:2px solid var(--border2);border-radius:0 0 3px 3px;`;
+      }
+
+      if (isSel && !isActive) {
+        bg = type==='empty' ? 'rgba(0,212,200,0.06)' : 'rgba(0,212,200,0.14)';
+        borderStyle = `1px solid rgba(0,212,200,0.6)`;
+      }
+      if (isActive) {
+        bg = 'rgba(0,212,200,0.18)'; borderStyle = `2px solid var(--cyan)`;
+        extraStyle += `z-index:3;box-shadow:0 0 0 1px var(--cyan);`;
+      }
+
+      if (type==='rack' && cell.sectionName) {
+        const aboveC = cellMap[`${r-1},${c}`];
+        const leftC  = cellMap[`${r},${c-1}`];
+        const isTopLeft = (!aboveC || aboveC.sectionName !== cell.sectionName) &&
+                          (!leftC  || leftC.sectionName  !== cell.sectionName);
+        if (isTopLeft) {
+          html += `<div style="position:absolute;top:${top-13}px;left:${left}px;
+            font-size:8px;font-weight:800;letter-spacing:2px;color:var(--cyan);
+            font-family:var(--mono);text-transform:uppercase;white-space:nowrap;
+            pointer-events:none;">${cell.sectionName}</div>`;
+        }
+      }
+
+      html += `<div
+        id="le-cell-${key}" data-key="${key}" data-r="${r}" data-c="${c}"
+        onmousedown="leCellMouseDown(event,'${key}')"
+        onmouseenter="leCellMouseEnter(event,'${key}')"
+        onmouseup="leDragEnd(event)"
+        oncontextmenu="leContextMenu(event,'${key}')"
+        style="position:absolute;top:${top}px;left:${left}px;width:${W}px;height:${H}px;
+          background:${bg};border:${borderStyle};${extraStyle}
+          display:flex;align-items:center;justify-content:center;
+          font-family:var(--mono);font-size:${fontSize};font-weight:${fontW};color:${textColor};
+          cursor:cell;box-sizing:border-box;overflow:hidden;border-radius:3px;transition:background 0.05s;">
+        ${cellText}
+      </div>`;
+    }
+  }
+  html += `</div>`;
+  wrap.innerHTML = html;
+  const wrapEl = document.getElementById('le-canvas-wrap');
+  wrapEl.setAttribute('tabindex','0');
+  wrapEl.onkeydown = leCellKeyDown;
+}
+
+function leCellMouseDown(e, key) {
+  e.preventDefault();
+  if (e.button === 2) return;
+  leDragging   = true;
+  leDragAnchor = key;
+  if (e.shiftKey && leActiveCell) {
+    leSelectRange(leActiveCell, key);
+  } else {
+    leSelection.clear();
+    leActiveCell = key;
+    leSelection.add(key);
+  }
+  renderLeCanvas();
+  leUpdateToolbar();
+  leUpdateStatus();
+  document.getElementById('le-canvas-wrap').focus();
+}
+
+function leCellMouseEnter(e, key) {
+  if (!leDragging) return;
+  leSelectRange(leDragAnchor, key);
+  renderLeCanvas();
+  leUpdateStatus();
+}
+
+function leDragEnd(e) {
+  if (!leDragging) return;
+  leDragging = false;
+  saveDB();
+  leUpdateToolbar();
+}
+
+function leSelectRange(a, b) {
+  const [ar,ac] = a.split(',').map(Number);
+  const [br,bc] = b.split(',').map(Number);
+  const minR=Math.min(ar,br), maxR=Math.max(ar,br);
+  const minC=Math.min(ac,bc), maxC=Math.max(ac,bc);
+  leSelection.clear();
+  for (let r=minR; r<=maxR; r++) for (let c=minC; c<=maxC; c++) leSelection.add(`${r},${c}`);
+  leActiveCell = b;
+}
+
+function leCellKeyDown(e) {
+  if (!leActiveCell) return;
+  const [r,c] = leActiveCell.split(',').map(Number);
+  const rows = DB.layout.canvasRows||12;
+  const cols = DB.layout.canvasCols||20;
+
+  if (e.key === 'ArrowRight' || (e.key==='Tab' && !e.shiftKey)) { e.preventDefault(); leMoveTo(r, Math.min(c+1, cols-1)); return; }
+  if (e.key === 'ArrowLeft'  || (e.key==='Tab' && e.shiftKey))  { e.preventDefault(); leMoveTo(r, Math.max(c-1, 0));     return; }
+  if (e.key === 'ArrowDown'  || e.key==='Enter')  { e.preventDefault(); leMoveTo(Math.min(r+1, rows-1), c); return; }
+  if (e.key === 'ArrowUp')   { e.preventDefault(); leMoveTo(Math.max(r-1, 0), c); return; }
+  if (e.key === 'Delete' || e.key==='Backspace')  { e.preventDefault(); leClearSelectedCells(); return; }
+  if (e.key === 'Escape') { leSelection.clear(); leActiveCell=null; renderLeCanvas(); leUpdateStatus(); return; }
+
+  if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+    e.preventDefault();
+    const char  = e.key.toUpperCase();
+    const canvas = DB.layout.canvas||[];
+    const idx = canvas.findIndex(x => x.r===r && x.c===c);
+    if (idx >= 0) {
+      canvas[idx].col  = char;
+      if (!canvas[idx].type || canvas[idx].type==='empty') canvas[idx].type = 'rack';
+    } else {
+      canvas.push({ r, c, type:'rack', col:char, rowName:'', face:'top', labelSide:'left', sectionName:'' });
+    }
+    DB.layout.canvas = canvas;
+    leMoveTo(r, Math.min(c+1, cols-1));
+    saveDB(); renderLeCanvas(); renderGrid(); populateLocSelects();
+  }
+}
+
+function leMoveTo(r, c) {
+  leActiveCell = `${r},${c}`;
+  leSelection.clear();
+  leSelection.add(leActiveCell);
+  renderLeCanvas();
+  leUpdateToolbar();
+  leUpdateStatus();
+}
+
+function leContextMenu(e, key) {
+  e.preventDefault();
+  leActiveCell = key;
+  if (!leSelection.has(key)) { leSelection.clear(); leSelection.add(key); }
+  renderLeCanvas();
+  const menu = document.getElementById('le-ctx-menu');
+  const items = [
+    { label:'[ ] Set as Aisle', fn:`leSetTypeSel('aisle')` },
+    { label:'[box] Set as Rack',  fn:`leSetTypeSel('rack')` },
+    { label:'x Clear cells',   fn:`leClearSelectedCells()` },
+    { label:'',   fn: null },
+    { label:'-> Auto-fill cols',fn:`leAutoFillCols()` },
+  ];
+  menu.innerHTML = items.map(item =>
+    item.fn
+      ? `<div onclick="${item.fn};leHideCtxMenu()" style="padding:7px 14px;cursor:pointer;font-size:12px;border-radius:3px;white-space:nowrap;" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">${item.label}</div>`
+      : `<div style="padding:2px 14px;font-size:10px;color:var(--muted);pointer-events:none;">${item.label}</div>`
+  ).join('');
+  menu.style.left    = e.clientX + 'px';
+  menu.style.top     = e.clientY + 'px';
+  menu.style.display = 'block';
+  setTimeout(() => document.addEventListener('click', leHideCtxMenu, {once:true}), 10);
+}
+function leHideCtxMenu() { const m=document.getElementById('le-ctx-menu'); if(m) m.style.display='none'; }
+
+// FIX: single debounce function that both toolbar inputs use
+let _leDebounceT = null;
+function leToolbarDebounce() {
+  clearTimeout(_leDebounceT);
+  _leDebounceT = setTimeout(() => leApplyToolbarNow(), 400);
+}
+
+function leApplyToolbarNow() {
+  if (!leSelection.size) return;
+  const rowName     = (document.getElementById('le-tb-row')||{}).value?.trim() || '';
+  const sectionName = (document.getElementById('le-tb-section')||{}).value?.trim() || '';
+  const canvas = DB.layout.canvas||[];
+  leSelection.forEach(key => {
+    const [r,c] = key.split(',').map(Number);
+    let idx = canvas.findIndex(x => x.r===r && x.c===c);
+    if (idx < 0) {
+      canvas.push({ r, c, type:'rack', col:'', rowName:'', face:'top', labelSide:'left', sectionName:'' });
+      idx = canvas.length - 1;
+    }
+    if (rowName     !== '') canvas[idx].rowName     = rowName;
+    if (sectionName !== '') canvas[idx].sectionName = sectionName;
+  });
+  DB.layout.canvas = canvas;
+  saveDB(); renderLeCanvas(); renderGrid(); populateLocSelects();
+}
+
+function leSetFace(face) {
+  const canvas = DB.layout.canvas||[];
+  leSelection.forEach(key => {
+    const [r,c] = key.split(',').map(Number);
+    const idx = canvas.findIndex(x => x.r===r && x.c===c);
+    if (idx >= 0) canvas[idx].face = face;
+  });
+  DB.layout.canvas = canvas;
+  saveDB(); renderLeCanvas(); renderGrid();
+  leUpdateToolbar();
+}
+
+function leSetLabel(side) {
+  const canvas = DB.layout.canvas||[];
+  leSelection.forEach(key => {
+    const [r,c] = key.split(',').map(Number);
+    const idx = canvas.findIndex(x => x.r===r && x.c===c);
+    if (idx >= 0) { canvas[idx].labelSide = side; }
+    else { canvas.push({ r, c, type:'rack', col:'', rowName:'', face:'top', labelSide:side, sectionName:'' }); }
+  });
+  DB.layout.canvas = canvas;
+  saveDB(); renderLeCanvas(); renderGrid();
+  leUpdateToolbar();
+  showToast('Label side: ' + side, 'info');
+}
+
+function leSetTypeSel(type) {
+  const canvas = DB.layout.canvas||[];
+  leSelection.forEach(key => {
+    const [r,c] = key.split(',').map(Number);
+    const idx = canvas.findIndex(x => x.r===r && x.c===c);
+    if (type === 'empty') {
+      if (idx >= 0) canvas.splice(idx, 1);
+    } else {
+      if (idx >= 0) canvas[idx].type = type;
+      else canvas.push({ r, c, type, rowName:'', col:'', face:'top', labelSide:'left', sectionName:'' });
+    }
+  });
+  DB.layout.canvas = canvas;
+  saveDB(); renderLeCanvas(); renderGrid(); populateLocSelects();
+  leUpdateToolbar();
+}
+
+function leAutoFillCols() {
+  const startVal = (document.getElementById('le-fill-start')||{}).value;
+  if (!startVal || !startVal.trim()) return showToast('Enter a start letter in Fill From', 'error');
+  const canvas = DB.layout.canvas||[];
+  const sorted = Array.from(leSelection).sort((a,b) => {
+    const [ar,ac]=a.split(',').map(Number), [br,bc]=b.split(',').map(Number);
+    return ar!==br ? ar-br : ac-bc;
+  });
+  let code = startVal.trim().toUpperCase().charCodeAt(0);
+  sorted.forEach(key => {
+    const [r,c] = key.split(',').map(Number);
+    const idx = canvas.findIndex(x => x.r===r && x.c===c);
+    if (idx >= 0 && canvas[idx].type==='rack') {
+      canvas[idx].col = String.fromCharCode(code++);
+    } else if (idx < 0) {
+      canvas.push({ r, c, type:'rack', col:String.fromCharCode(code++), rowName:'', face:'top', labelSide:'left', sectionName:'' });
+    }
+  });
+  DB.layout.canvas = canvas;
+  saveDB(); renderLeCanvas(); renderGrid(); populateLocSelects();
+  showToast(`Auto-filled ${sorted.length} columns`, 'success');
+}
+
+function leClearSelectedCells() {
+  const canvas = DB.layout.canvas||[];
+  leSelection.forEach(key => {
+    const [r,c] = key.split(',').map(Number);
+    const idx = canvas.findIndex(x => x.r===r && x.c===c);
+    if (idx >= 0) canvas.splice(idx, 1);
+  });
+  DB.layout.canvas = canvas;
+  leSelection.clear(); leActiveCell = null;
+  saveDB(); renderLeCanvas(); renderGrid(); populateLocSelects();
+  leUpdateStatus();
+}
+
+function leUpdateToolbar() {
+  if (!leSelection.size) return;
+  const canvas = DB.layout.canvas||[];
+  const [fr,fc] = (leActiveCell || Array.from(leSelection)[0]).split(',').map(Number);
+  const cell = canvas.find(x => x.r===fr && x.c===fc) || {};
+  const face  = cell.face      || 'top';
+  const label = cell.labelSide || 'left';
+  const type  = cell.type      || 'empty';
+
+  ['top','bottom','single'].forEach(f => {
+    const btn = document.getElementById('face-btn-'+f);
+    if (btn) { btn.className = `btn btn-sm ${face===f?'btn-primary':'btn-secondary'}`; btn.style.padding='4px 8px'; }
+  });
+  ['left','right','both'].forEach(l => {
+    const btn = document.getElementById('label-btn-'+l);
+    if (btn) { btn.className = `btn btn-sm ${label===l?'btn-primary':'btn-secondary'}`; btn.style.padding='4px 8px'; }
+  });
+  ['rack','aisle','empty'].forEach(t => {
+    const btn = document.getElementById('type-btn-'+t);
+    if (btn) { btn.className = `btn btn-sm ${type===t?'btn-primary':'btn-secondary'}`; btn.style.padding='4px 8px'; }
+  });
+  const rowEl = document.getElementById('le-tb-row');
+  const secEl = document.getElementById('le-tb-section');
+  if (rowEl && cell.rowName     !== undefined) rowEl.value = cell.rowName     || '';
+  if (secEl && cell.sectionName !== undefined) secEl.value = cell.sectionName || '';
+}
+
+function leUpdateStatus() {
+  const el = document.getElementById('le-status-bar');
+  if (!el) return;
+  if (!leSelection.size) { el.textContent = 'No cells selected'; return; }
+  const canvas = DB.layout.canvas||[];
+  const rackCount = Array.from(leSelection).filter(k => {
+    const [r,c] = k.split(',').map(Number);
+    const cell = canvas.find(x => x.r===r && x.c===c);
+    return cell && cell.type==='rack';
+  }).length;
+  el.textContent = `${leSelection.size} cell${leSelection.size>1?'s':''} selected${rackCount ? ` . ${rackCount} rack cell${rackCount>1?'s':''}` : ''}`;
+}
+
+document.addEventListener('mouseup', () => {
+  if (leDragging) { leDragging=false; saveDB(); leUpdateToolbar(); }
+});
+
+// 
+// ADMIN  STATUSES
+// 
+function renderStatuses() {
+  const el = document.getElementById('statuses-list');
+  el.innerHTML = DB.statuses.map(s => `<div class="status-row">
+    <div class="status-color-dot" style="background:${s.color};"></div>
+    <div class="status-name">${s.name}</div>
+    ${s.locked ? '<span class="status-locked-badge">SYSTEM</span>' : ''}
+    <div style="display:flex;gap:4px;">
+      ${!s.locked ? `<button class="btn btn-sm btn-danger" onclick="deleteStatus('${s.id}')">Remove</button>` : ''}
+    </div>
+  </div>`).join('');
+}
+function openNewStatusModal() {
+  document.getElementById('new-status-name').value = '';
+  openModal('modal-new-status');
+}
+function confirmNewStatus() {
+  const name  = document.getElementById('new-status-name').value.trim();
+  const color = document.getElementById('new-status-color').value;
+  if (!name) return showToast('Name required', 'error');
+  DB.statuses.push({
+    id: 's-'+Date.now(), name, color, locked: false,
+    showItem:     document.getElementById('ns-item').checked,
+    showTransfer: document.getElementById('ns-transfer').checked,
+    showFilter:   document.getElementById('ns-filter').checked,
+    active: true
+  });
+  saveDB(); closeModal('modal-new-status'); renderStatuses(); showToast('Status created', 'success');
+}
+function deleteStatus(id) {
+  DB.statuses = DB.statuses.filter(s => s.id!==id);
+  saveDB(); renderStatuses(); showToast('Status removed', 'success');
+}
+
+// 
+// ADMIN  COLORS
+// 
+function renderColorSettings() {
+  const defs = [
+    { key:'empty',    label:'Empty Cell',          sub:'Unoccupied grid cell' },
+    { key:'occupied', label:'Occupied (1 item)',    sub:'Cell with a single item' },
+    { key:'multi',    label:'Multiple Items',       sub:'Cell with 2+ items' },
+    { key:'transfer', label:'Transfer Active',      sub:'Item currently in transfer' },
+    { key:'stale',    label:'Unverified / Stale',   sub:'Item not verified in 7+ days' },
+  ];
+  document.getElementById('color-settings-list').innerHTML = defs.map(d => `<div class="color-picker-row">
+    <div><div class="cp-label">${d.label}</div><div class="cp-sub">${d.sub}</div></div>
+    <input type="color" value="${toHex(DB.colors[d.key])}" onchange="updateColor('${d.key}',this.value)" />
+  </div>`).join('');
+}
+function updateColor(key, val) { DB.colors[key]=val; saveDB(); renderGrid(); }
+function toHex(c) {
+  if (!c || c==='transparent') return '#0c0e14';
+  return c.startsWith('#') ? c : '#888888';
+}
+
+// 
+// AUDIT LOG
+// 
+function renderAuditLog() {
+  const logs = [...DB.log].sort((a,b) => b.ts.localeCompare(a.ts)).slice(0, 200);
+  const el   = document.getElementById('audit-log-list');
+  if (!logs.length) { el.innerHTML='<div class="empty-state"><div class="empty-icon">[log]</div>No activity yet</div>'; return; }
+  const typeClass = {
+    ADD:'log-add', MOVE:'log-move', SELL:'log-sell',
+    TRANSFER_INIT:'log-transfer', TRANSFER_COMPLETE:'log-transfer', TRANSFER_CANCEL:'log-transfer',
+    VERIFY:'log-verify', EDIT:'log-edit',
+    LOGIN:'', LOGOUT:'', USER_CREATE:'log-add', USER_DELETE:'log-sell', LOCKOUT:'log-sell'
+  };
+  el.innerHTML = logs.map(l => `<div class="log-entry ${typeClass[l.action]||''}">
+    <div><span class="log-action">${l.action.replace(/_/g,' ')}</span> by <span class="log-user">${l.user}</span></div>
+    <div class="log-detail">${l.detail}</div>
+    <div class="log-time">${fmtDateTime(l.ts)}</div>
+  </div>`).join('');
+}
+
+// 
+// SOLD ITEMS VIEW
+// 
+function renderSoldView() {
+  const canSoldView = session && (session.roleId === 'admin' || session.roleId === 'manager' ||
+    DB.roles.find(r => r.id === session.roleId)?.perms?.viewAudit ||
+    DB.roles.find(r => r.id === session.roleId)?.perms?.manageUsers);
+  if (!canSoldView) return;
+
+  const sold = DB.inventory.filter(i => i.sold).sort((a,b) => (b.soldAt||b.added).localeCompare(a.soldAt||a.added));
+  const countEl = document.getElementById('sold-count');
+  if (countEl) countEl.textContent = `${sold.length} item${sold.length!==1?'s':''}`;
+
+  // Update sold badge in nav
+  const badge = document.getElementById('sold-badge');
+  if (badge) { badge.textContent = sold.length; badge.style.display = sold.length ? '' : 'none'; }
+
+  const tbody = document.getElementById('sold-tbody');
+  if (!tbody) return;
+  if (!sold.length) {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state" style="padding:32px;"><div class="empty-icon">[tag]</div>No sold items</div></td></tr>`;
+    return;
+  }
+
+  const canTransfer  = session.perms.initiateTransfer;
+  const floorLabel   = i => i.floorRemoved
+    ? '<span style="color:var(--muted2);font-family:var(--mono);font-size:11px;">Removed</span>'
+    : '<span style="color:var(--red);font-family:var(--mono);font-size:11px;">o On Floor</span>';
+
+  tbody.innerHTML = sold.map(i => `
+    <tr onclick="openDetail('${i.serial}')">
+      <td style="color:var(--muted2);font-size:11px;">${i.model||'--'}</td>
+      <td class="td-serial">${i.serial}</td>
+      <td>${i.type}</td>
+      <td class="td-loc">${i.location}</td>
+      <td style="color:var(--muted2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;">${i.damage||'--'}</td>
+      <td style="color:var(--muted2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${i.notes||'--'}</td>
+      <td style="color:var(--muted2);">${fmtDate(i.soldAt||i.added)}</td>
+      <td>${floorLabel(i)}</td>
+      <td><div class="td-actions">
+        ${!i.floorRemoved&&canTransfer?`<button class="btn btn-sm btn-danger" onclick="event.stopPropagation();openSoldRemovalTransfer('${i.serial}')">Transfer Out</button>`:''}
+        <button class="btn btn-sm btn-green" onclick="event.stopPropagation();openRestoreModal('${i.serial}')"><- Return</button>
+        <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();dismissSoldItem('${i.serial}')">x Dismiss</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+let pendingRestoreSerial = null;
+
+function openRestoreModal(serial) {
+  const item = DB.inventory.find(i => i.serial===serial);
+  if (!item) return;
+  pendingRestoreSerial = serial;
+  document.getElementById('restore-item-label').textContent = `Returning: ${item.serial} (${item.type})`;
+  document.getElementById('restore-notes').value = '';
+  // Pre-fill with last known location (if it's still a valid layout cell)
+  const validLocs = getAllLocations().map(l => l.loc);
+  locComboSet('restore-loc-select', validLocs.includes(item.location) ? item.location : '');
+  openModal('modal-restore-item');
+}
+
+function confirmRestoreItem() {
+  const item = DB.inventory.find(i => i.serial===pendingRestoreSerial);
+  if (!item) return;
+  const loc   = locComboGet('restore-loc-select');
+  const notes = document.getElementById('restore-notes').value.trim();
+  if (!loc) return showToast('Select a location', 'error');
+  const oldLoc = item.location;
+  item.sold         = false;
+  item.soldAt       = null;
+  item.floorRemoved = false;
+  item.location     = loc;
+  item.lastVerified = now();
+  if (notes) item.notes = notes;
+  addLog(session.username, 'RESTORE', `Returned ${item.serial} to inventory at ${loc}${oldLoc!==loc?' (was '+oldLoc+')':''}`, item.serial);
+  saveDB();
+  sheetsPush('restoreItem', { serial: item.serial, location: loc });
+  closeModal('modal-restore-item');
+  renderAll();
+  showToast(`${item.serial} returned to inventory`, 'success');
+}
+
+function openSoldRemovalTransfer(serial) {
+  // Convenience: open transfer modal pre-filled for sold-removal
+  const existingTransfer = DB.transfers.find(t => t.serial===serial && t.status==='active');
+  if (existingTransfer) return showToast('This item already has an active transfer', 'error');
+  pendingTransferSerial = serial;
+  const item = DB.inventory.find(i => i.serial===serial);
+  document.getElementById('transfer-item-label').textContent = `Item: ${serial}`;
+  document.getElementById('transfer-reason').value = 'sold-removal';
+  document.getElementById('transfer-notes').value  = '';
+  openModal('modal-transfer');
+}
+
+function dismissSoldItem(serial) {
+  if (!confirm(`Permanently dismiss "${serial}" from the sold list? This cannot be undone.`)) return;
+  const idx = DB.inventory.findIndex(i => i.serial===serial);
+  if (idx < 0) return;
+  // Cancel any active transfers
+  DB.transfers.filter(t => t.serial===serial && t.status==='active').forEach(t => {
+    t.status = 'cancelled'; t.verifiedBy = session.username; t.verified = now();
+  });
+  DB.inventory.splice(idx, 1);
+  addLog(session.username, 'DISMISS', `Dismissed sold item: ${serial}`);
+  saveDB();
+  sheetsPush('dismissItem', { serial });
+  renderAll();
+  showToast(`${serial} dismissed`, 'info');
+}
+
+// 
+// GOOGLE SHEETS SYNC
+// 
+
+//  State 
+// DB.sheetsUrl stored in DB for persistence
+
+function sheetsUrl() { return DB.sheetsUrl || ''; }
+
+function sheetsClearDiag() {
+  const d = document.getElementById('sheets-diag');
+  if (d) { d.style.display = 'none'; d.innerHTML = ''; }
+}
+
+function sheetsDiag(lines) {
+  const d = document.getElementById('sheets-diag');
+  if (!d) return;
+  d.style.display = '';
+  d.innerHTML = lines.map(([msg, color]) =>
+    `<div style="color:${color||'var(--muted2)'};">${msg}</div>`
+  ).join('');
+}
+
+function sheetsConnect() {
+  const url = document.getElementById('sheets-url').value.trim();
+  if (!url || !url.startsWith('https://script.google.com')) {
+    return showToast('Enter a valid Apps Script URL', 'error');
+  }
+  DB.sheetsUrl = url;
+  saveDB();
+  sheetsUpdateStatus(true);
+  showToast('Connected to Google Sheets', 'success');
+}
+
+async function sheetsTest() {
+  const urlInput = document.getElementById('sheets-url');
+  const raw = urlInput ? urlInput.value.trim() : '';
+
+  const lines = [];
+
+  //  Step 1: URL format check
+  if (!raw) {
+    return sheetsDiag([['x No URL entered -- paste your Apps Script URL above', 'var(--red)']]);
+  }
+  if (!raw.startsWith('https://script.google.com')) {
+    return sheetsDiag([
+      ['x URL does not look right', 'var(--red)'],
+      ['It should start with: https://script.google.com/macros/s/...', 'var(--muted2)'],
+      [`You entered: ${raw.slice(0,80)}`, 'var(--muted2)']
+    ]);
+  }
+  if (!raw.endsWith('/exec')) {
+    lines.push(['! URL does not end with /exec -- make sure you copied the full deployment URL', 'var(--accent)']);
+  } else {
+    lines.push(['v URL format looks correct', 'var(--green)']);
+  }
+  lines.push([`  ${raw.slice(0,72)}${raw.length>72?'...':''}`, 'var(--muted2)']);
+  sheetsDiag(lines);
+
+  //  Step 2: JSONP connectivity test
+  lines.push(['', '']);
+  lines.push(['Testing connection via JSONP...', 'var(--muted2)']);
+  sheetsDiag(lines);
+
+  // Temporarily set sheetsUrl to the input value for the test
+  const savedUrl = DB.sheetsUrl;
+  DB.sheetsUrl = raw;
+
+  try {
+    const data = await sheetsJSONP({ action: 'getAll' });
+    lines.push(['v Connection successful!', 'var(--green)']);
+    lines.push([`  Sheet returned ${data.items ? data.items.length : 0} row(s)`, 'var(--muted2)']);
+    // Persist the URL since it worked
+    saveDB();
+    sheetsUpdateStatus(true);
+    showToast('Connection test passed', 'success');
+  } catch(err) {
+    DB.sheetsUrl = savedUrl; // restore on failure
+    lines.push([`x Connection failed: ${err.message}`, 'var(--red)']);
+    lines.push(['', '']);
+    lines.push(['Things to check:', 'var(--text)']);
+    lines.push(['  1. Did you deploy as a Web app (not just save)?', 'var(--muted2)']);
+    lines.push(['  2. Is "Who has access" set to Anyone (not "Anyone with Google account")?', 'var(--muted2)']);
+    lines.push(['  3. Did you authorize the script when prompted?', 'var(--muted2)']);
+    lines.push(['  4. If you edited the script, did you redeploy with a New Version?', 'var(--muted2)']);
+    lines.push(['  5. Make sure popups are allowed for this page in your browser', 'var(--muted2)']);
+    lines.push(['  6. Try opening the URL directly in a new browser tab -- you should see an HTML page', 'var(--muted2)']);
+  }
+  sheetsDiag(lines);
+}
+
+function sheetsDisconnect() {
+  DB.sheetsUrl = '';
+  saveDB();
+  sheetsUpdateStatus(false);
+  showToast('Disconnected', 'info');
+}
+
+function sheetsUpdateStatus(connected) {
+  const el = document.getElementById('sheets-status');
+  const card = document.getElementById('sheets-sync-card');
+  const urlEl = document.getElementById('sheets-url');
+  if (!el) return;
+  if (connected) {
+    el.textContent = 'o Connected';
+    el.style.color = 'var(--green)';
+    if (card) card.style.display = '';
+    if (urlEl) urlEl.value = DB.sheetsUrl || '';
+  } else {
+    el.textContent = 'Not connected';
+    el.style.color = 'var(--muted2)';
+    if (card) card.style.display = 'none';
+  }
+}
+
+function sheetsLog(msg, type='info') {
+  const el = document.getElementById('sheets-sync-log');
+  if (!el) return;
+  el.style.display = '';
+  const color = type==='error' ? 'var(--red)' : type==='success' ? 'var(--green)' : 'var(--muted2)';
+  const line = document.createElement('div');
+  line.style.cssText = `color:${color};margin-bottom:2px;`;
+  line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+
+//  Sheets GET  calls server-side getAllItems() via google.script.run 
+// Works natively because FloorTrack is now hosted inside Apps Script.
+function sheetsJSONP(params={}) {
+  if (!GAS) return Promise.reject(new Error('Not running in Apps Script'));
+  return new Promise((resolve, reject) => {
+    google.script.run
+      .withSuccessHandler(data => {
+        if (!data || !data.ok) return reject(new Error((data && data.error) || 'Sheet error'));
+        resolve(data);
+      })
+      .withFailureHandler(err => reject(new Error(err.message || String(err))))
+      .getAllItems();
+  });
+}
+
+//  Push a single write operation via google.script.run 
+// action and payload mirror the old doPost actions.
+// For actions that don't need a return value (add, move, etc.)
+// we use the same upsertItemGSR server function for simplicity.
+function sheetsFormPOST(body) {
+  // No-op: form POST is no longer needed when hosted inside Apps Script.
+  // All writes now go through google.script.run (see sheetsPush below).
+}
+
+//  Push  fire-and-forget via google.script.run 
+function sheetsPush(action, payload) {
+  if (!GAS) return;
+  try {
+    google.script.run
+      .withFailureHandler(err => console.warn('Sheet push failed:', err.message))
+      .upsertItemGSR({ action, ...payload });
+  } catch(err) {
+    console.warn('google.script.run unavailable:', err.message);
+  }
+}
+
+//  Pull from sheet  FloorTrack 
+async function sheetsPull() {
+  sheetsLog('Pulling from sheet...');
+  try {
+    const data = await sheetsJSONP({ action: 'getAll' });
+    const validLocs = new Set(getAllLocations().map(l => l.loc));
+    let added = 0, updated = 0, unplaced = 0;
+    data.items.forEach(row => {
+      if (!row.serial) return;
+      // Validate location against the current layout
+      const rawLoc     = row.location || '';
+      const validLoc   = validLocs.has(rawLoc) ? rawLoc : '';
+      if (rawLoc && !validLoc) unplaced++;
+
+      const existing = DB.inventory.find(i => i.serial === row.serial);
+      if (existing) {
+        existing.model    = row.model        || existing.model;
+        // Only update location if the sheet value is a valid layout cell;
+        // preserve existing location if sheet value isn't recognised
+        if (validLoc) existing.location = validLoc;
+        if (rawLoc && !validLoc) existing.sheetLocation = rawLoc;
+        existing.notes    = row.sale         || existing.notes;
+        existing.damage   = row.description  || existing.damage;
+        if (row.sold && !existing.sold) {
+          existing.sold = true;
+          existing.soldAt = existing.soldAt || now();
+        }
+        updated++;
+      } else {
+        DB.inventory.push({
+          serial:        row.serial,
+          model:         row.model        || '',
+          type:          '',
+          location:      validLoc,
+          sheetLocation: rawLoc && !validLoc ? rawLoc : undefined,
+          notes:         row.sale         || '',
+          damage:        row.description  || '',
+          condition:     '',
+          sold:          row.sold         || false,
+          soldAt:        row.sold ? (row.dateAdded || now()) : null,
+          floorRemoved:  row.sold         || false,
+          added:         row.dateAdded    || now(),
+          lastVerified:  row.dateAdded    || now(),
+          status:        row.sold ? 'sold' : 'in-stock'
+        });
+        added++;
+      }
+    });
+    saveDB();
+    renderAll();
+    const unplacedNote = unplaced ? `, ${unplaced} unplaced (location not in layout)` : '';
+    sheetsLog(`Done -- ${added} added, ${updated} updated${unplacedNote}`, 'success');
+    showToast(`Pulled ${added} new, ${updated} updated${unplaced ? `, ${unplaced} unplaced` : ''}`, 'success');
+  } catch(err) {
+    sheetsLog(`Error: ${err.message}`, 'error');
+    showToast(`Pull failed: ${err.message}`, 'error');
+  }
+}
+
+//  Push ALL FloorTrack items to sheet 
+async function sheetsPushAll() {
+  if (!GAS) { showToast('Sheets push requires Apps Script connection', 'error'); return; }
+  if (!confirm('Push all FloorTrack items to the sheet? Existing rows will be updated; new serials will be appended.')) return;
+  sheetsLog(`Pushing ${DB.inventory.length} items...`);
+  let ok = 0, errors = 0;
+  const pushOne = (item) => new Promise(resolve => {
+    google.script.run
+      .withSuccessHandler(res => { if (res && res.ok) ok++; else errors++; resolve(); })
+      .withFailureHandler(() => { errors++; resolve(); })
+      .upsertItemGSR({
+        serial:      item.serial,
+        model:       item.model        || '',
+        location:    item.location,
+        sale:        item.notes        || '',
+        description: item.damage       || '',
+        dateAdded:   item.added,
+        sold:        item.sold         || false
+      });
+  });
+  for (const item of DB.inventory) {
+    await pushOne(item);
+    await new Promise(r => setTimeout(r, 80));
+  }
+  const msg = errors
+    ? `Done -- ${ok} pushed, ${errors} error(s)`
+    : `Done -- ${ok} items pushed successfully`;
+  sheetsLog(msg, errors ? 'error' : 'success');
+  showToast(msg, errors ? 'error' : 'success');
+}
+
+//  Render sheets panel (called by switchAdminPanel) 
+function renderSheetsPanel() {
+  sheetsUpdateStatus(!!sheetsUrl());
+}
+
+// 
+// RENDER ALL
+// 
+function renderAll() {
+  renderGrid();
+  renderSidebarList();
+  renderTransferSidebar();
+  renderInventoryTable();
+  renderTransfersView();
+  renderSoldView();
+  updateTransferBadge();
+}
+
+function updateTransferBadge() {
+  const count = DB.transfers.filter(t => t.status==='active').length;
+  const badge = document.getElementById('transfer-badge');
+  if (badge) {
+    badge.textContent    = count;
+    badge.style.display  = count ? '' : 'none';
+  }
+}
+
+// 
+// HELPERS
+// 
+function condLabel(c) { return {good:'Good', fair:'Fair', poor:'Poor'}[c] || c; }
+function now()         { return new Date().toISOString(); }
+function uid()         { return Math.random().toString(36).slice(2,10); }
+function fmtDate(iso)  { if(!iso) return '--'; return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'}); }
+function fmtDateTime(iso) { if(!iso) return '--'; return new Date(iso).toLocaleString('en-US',{month:'short',day:'numeric',year:'2-digit',hour:'2-digit',minute:'2-digit'}); }
+function isStale(iso)  { if(!iso) return true; return (Date.now()-new Date(iso)) > 7*24*60*60*1000; }
+function addLog(user, action, detail, serial=null) { DB.log.push({ user, action, detail, serial, ts: now() }); }
+
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className   = `show ${type}`;
+  clearTimeout(window._toastT);
+  window._toastT = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── LAYOUT FILE EXPORT / IMPORT ──
+function exportLayout() {
+  const payload = JSON.stringify(getActiveLayout(), null, 2);
+  const ts = new Date().toISOString().slice(0,10);
+  const a = document.createElement('a');
+  a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(payload);
+  a.download = 'floortrack-layout-' + ts + '.json';
+  a.click();
+  addLog(session.username, 'LAYOUT_EXPORT', 'Layout exported to file');
+  saveDB();
+  showToast('Layout exported', 'success');
+}
+
+function importLayout() {
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = '.json';
+  inp.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const parsed = JSON.parse(ev.target.result);
+        if (!parsed.canvas || !Array.isArray(parsed.canvas)) throw new Error('Invalid layout file');
+        DB.layout = Object.assign({}, DB.layout, parsed);
+        saveDB();
+        renderLeCanvas();
+        renderGrid();
+        populateLocInputs();
+        addLog(session.username, 'LAYOUT_IMPORT', 'Layout imported from ' + file.name);
+        showToast('Layout imported successfully', 'success');
+      } catch(err) {
+        showToast('Import failed — invalid layout file', 'error');
+      }
+    };
+    reader.readAsText(file);
+  };
+  inp.click();
+}
+
+//  KEYBOARD SHORTCUTS 
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeDetail();
+    closeUserMenu();
+    ['modal-move','modal-transfer','modal-sell','modal-activitylog','modal-add-user',
+     'modal-new-role','modal-new-status','modal-transfer-detail','modal-change-role',
+     'modal-change-password','modal-edit-item','modal-restore-item'].forEach(closeModal);
+  }
+});
+</script>
+</body>
+</html>
