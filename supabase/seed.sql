@@ -1,0 +1,2 @@
+-- Phase 1 does not seed a company or users.
+-- Create the platform owner from the app after setting PLATFORM_OWNER_EMAILS.
